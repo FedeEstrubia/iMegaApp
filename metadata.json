@@ -1,0 +1,7 @@
+{
+  "name": "Mercado iPhone AI",
+  "description": "Un mercado premium de iPhone con información de dispositivos impulsada por IA y un ecosistema de recompensas.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
