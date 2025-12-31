@@ -86,7 +86,7 @@ const MarketplaceScreen: React.FC = () => {
         <div className="grid grid-cols-2 gap-4 px-5 pb-4">
           {filteredProducts.map(product => (
             <div key={product.id} className="flex flex-col gap-2 p-3 rounded-xl bg-white dark:bg-surface-dark shadow-sm border border-gray-100 dark:border-gray-800 group hover:shadow-md transition-shadow">
-              <Link to={`/product/${product.id}`} className="relative w-full aspect-[4/5] bg-gray-50 dark:bg-[#111a22] rounded-lg overflow-hidden flex items-center justify-center p-4">
+              <Link to={`/product/${product.id}`} className="relative w-full aspect-[4/5] bg-gray-50 dark:bg-[#111a22] rounded-lg overflow-hidden flex items-center justify-center">
                 <div className="absolute top-2 right-2 z-10">
                   <button
                     className={`flex items-center justify-center h-8 w-8 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-sm transition-colors ${isSaved(product.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
