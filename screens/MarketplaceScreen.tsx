@@ -72,14 +72,20 @@ const MarketplaceScreen: React.FC = () => {
       <div className="flex-1 overflow-y-auto no-scrollbar pb-24">
         <div className="px-5 py-4">
           <Link to="/product/15-pro-max" className="block relative w-full h-48 rounded-xl overflow-hidden shadow-lg group cursor-pointer">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-primary opacity-80 z-10"></div>
+            {/* <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-primary opacity-80 z-10"></div>
             <div className="absolute inset-0 bg-center bg-cover transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBR5Izyj_DmAYl2q5CwyScxnvWbkWz4GlhegXOdnMRCi9kxUz1-ctJyQk-VFCYBlIq-jGaHDddM0BdAPydoUxCthDPHT_rK2pSTP2UPh0Z1UxbwDSMucABqjgQbI5oO0HGcSChqeLNW7iFs5-aWssEccDujH2x9AZ3tv5FhInXmNPuUnwR1pbT0jxTfWoNlWumtbyyYN7zFsV1_ZSpmvJemUL5Ji_qkBjRuH6QLpSwXglmuhNOdnKtq6NNAKvLo44ROY4ow2GhBzpY')" }}></div>
             <div className="absolute inset-0 z-20 flex flex-col justify-center px-6">
               <span className="text-primary-100 text-xs font-bold uppercase tracking-wider mb-2 bg-primary/30 w-fit px-2 py-1 rounded backdrop-blur-sm">Recién Llegado</span>
               <h3 className="text-white text-2xl font-bold mb-1">iPhone 15 Pro</h3>
               <p className="text-gray-200 text-sm mb-4 max-w-[70%]">Diseño de titanio. Chip A17 Pro.</p>
               <span className="bg-white text-primary text-sm font-bold py-2 px-4 rounded-lg w-fit hover:bg-gray-100 transition-colors">Ver Oferta</span>
-            </div>
+            </div>*/}
+
+
+
+
+
+
           </Link>
         </div>
 
