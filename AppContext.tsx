@@ -83,6 +83,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const fetchInventory = async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching inventory:', error);
+    } else {
+      const mappedData = (data || []).map((p: any) => ({
+        ...p,
+        imageUrl: p.image_url || p.imageUrl || 'https://placehold.co/400x500/101922/FFF?text=Sin+Imagen',
+        costPrice: p.cost_price || p.costPrice,
+        originalPrice: p.original_price || p.originalPrice,
+        batteryHealth: p.battery_health || p.batteryHealth,
+      }));
+      setInventory(mappedData);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -105,18 +125,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
 
-    const fetchInventory = async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('name');
 
-      if (error) {
-        console.error('Error fetching inventory:', error);
-      } else {
-        setInventory(data || []);
-      }
-    };
 
     initSession();
     fetchInventory();
@@ -277,36 +286,75 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // 4. Refresh Data
     fetchProfile(user.id);
-    const { data: refreshedInventory } = await supabase.from('products').select('*').order('name');
-    if (refreshedInventory) setInventory(refreshedInventory);
+    await fetchInventory();
 
     setCart([]);
     setUseTradeIn(false);
   };
 
   const addInventoryItem = async (product: Product) => {
-    // Remove id if it is custom temporary id, let DB assign UUID
     const { id, ...rest } = product;
-    // or if we want to allow custom IDs, keep it. But usually uuid_generate_v4() is better.
-    // If the tool sent a custom- timestamp id, we should probably ignore it and let Supabase generate one, 
-    // unless we actually want that specific ID.
-    // For now, let's try to insert. If product.id is 'custom-...', remove it.
-    const payload = id.startsWith('custom-') ? rest : product;
 
-    const { data, error } = await supabase.from('products').insert([payload]).select().single();
+    // Map to snake_case for DB
+    const dbPayload = {
+      ...rest,
+      image_url: product.imageUrl,
+      cost_price: product.costPrice,
+      original_price: product.originalPrice,
+      battery_health: product.batteryHealth,
+      // Ensure we don't send camelCase if DB is strict, but usually extra keys are ignored or we should omit them explicitly if needed.
+      // For now, sending both is risky if DB has strict schema, but mapping ensures the snake_case keys exist.
+      // Better to explicitly construct the object if we know the schema.
+      // Let's assume strict snake_case is needed and create a clean object.
+    };
+
+    // Clean payload: remove camelCase versions to avoid DB errors if columns don't exist
+    const { imageUrl, costPrice, originalPrice, batteryHealth, ...cleanRest } = rest;
+    const finalPayload = {
+      ...cleanRest,
+      image_url: imageUrl,
+      cost_price: costPrice,
+      original_price: originalPrice,
+      battery_health: batteryHealth
+    };
+
+    const { data, error } = await supabase.from('products').insert([finalPayload]).select().single();
+
     if (error) {
       console.error('Error adding product:', error);
     } else if (data) {
-      setInventory(prev => [data, ...prev]);
+      // When we get data back, we need to map it back to camelCase for local state?
+      // OR just re-fetch inventory. Re-fetching is safer for consistency.
+      // But to be fast, we can just append the local product (with the new ID).
+      // Actually, data returned from insert will be snake_case.
+      const newProduct = {
+        ...data,
+        imageUrl: data.image_url,
+        costPrice: data.cost_price,
+        originalPrice: data.original_price,
+        batteryHealth: data.battery_health,
+      };
+      setInventory(prev => [newProduct, ...prev]);
     }
   };
 
   const updateInventoryItem = async (product: Product) => {
-    const { error } = await supabase.from('products').update(product).eq('id', product.id);
+    // Clean payload and map to snake_case
+    const { id, imageUrl, costPrice, originalPrice, batteryHealth, ...rest } = product;
+    const finalPayload = {
+      ...rest,
+      image_url: imageUrl,
+      cost_price: costPrice,
+      original_price: originalPrice,
+      battery_health: batteryHealth
+    };
+
+    const { error } = await supabase.from('products').update(finalPayload).eq('id', product.id);
+
     if (error) {
       console.error('Error updating product:', error);
     } else {
-      setInventory(prev => prev.map(p => p.id === product.id ? product : p));
+      setInventory(prev => prev.map(item => item.id === product.id ? product : item));
     }
   };
 
