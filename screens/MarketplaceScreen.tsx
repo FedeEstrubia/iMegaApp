@@ -31,7 +31,7 @@ const MarketplaceScreen: React.FC = () => {
     <div className="flex flex-col h-screen overflow-hidden bg-background-light dark:bg-background-dark">
       {/* Header */}
       <header className="sticky top-0 z-30 flex items-center justify-between px-5 pt-12 pb-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800/50">
-        <h2 className="text-xl font-bold leading-tight tracking-tight flex-1">Mercado</h2>
+        <h2 className="text-xl font-bold leading-tight tracking-tight flex-1">iMega</h2>
         <div className="flex items-center gap-4">
           <Link to={profilePath} className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-700 overflow-hidden cursor-pointer border border-primary/20">
             <img alt="Perfil" className="h-full w-full object-cover" src={userEmail ? `https://picsum.photos/seed/${userEmail.split('@')[0]}/100/100` : "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} />
