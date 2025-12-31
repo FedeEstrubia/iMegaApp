@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { REWARD_HISTORY } from '../constants';
 import { useAppContext } from '../AppContext';
 import { supabase } from '../services/supabase';
+import { useCallback, useEffect, useState } from 'react';
 
 const ProfileScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -13,8 +13,22 @@ const ProfileScreen: React.FC = () => {
     session,
     userRole,
     userDevice,
-    getCurrentTier
+    getCurrentTier,
+    userPoints
   } = useAppContext();
+
+  const [history, setHistory] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      supabase.from('reward_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false })
+        .limit(10)
+        .then(({ data }) => setHistory(data || []));
+    }
+  }, [user]);
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const userEmail = user?.email || session?.user?.email || '';
@@ -106,17 +120,15 @@ const ProfileScreen: React.FC = () => {
               <span className="material-symbols-outlined text-primary text-[20px]">workspace_premium</span>
               <span className="text-xs font-black text-primary uppercase tracking-widest">{currentTier}</span>
             </div>
-            <h2 className="text-4xl font-black tracking-tight mb-1 text-slate-900 dark:text-white">1,250</h2>
+            <h2 className="text-4xl font-black tracking-tight mb-1 text-slate-900 dark:text-white">{userPoints.toLocaleString()}</h2>
             <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-6">Puntos Acumulados</p>
 
             <div className="w-full space-y-2 text-left">
               <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-400">
-                <span>Siguiente Nivel</span>
-                <span>750 pts faltantes</span>
+                <span>Estado</span>
+                <span>{currentTier}</span>
               </div>
-              <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: "62%" }}></div>
-              </div>
+
             </div>
           </div>
         </div>
@@ -125,15 +137,17 @@ const ProfileScreen: React.FC = () => {
         <div className="space-y-4">
           <h3 className="text-[10px] font-black uppercase text-slate-400 pl-1 tracking-[0.2em]">Actividad</h3>
           <div className="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-50 dark:divide-slate-800">
-            {REWARD_HISTORY.map(item => (
+            {history.length === 0 ? (
+              <div className="p-4 text-center text-slate-400 text-xs">Sin actividad reciente</div>
+            ) : history.map(item => (
               <div key={item.id} className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-slate-500 text-xl">{item.icon}</span>
+                    <span className="material-symbols-outlined text-slate-500 text-xl">{item.icon || 'star'}</span>
                   </div>
                   <div>
-                    <p className="text-sm font-bold">{item.title}</p>
-                    <p className="text-[10px] text-slate-400 font-medium">{item.date}</p>
+                    <p className="text-sm font-bold">{item.title || item.reason}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">{formatDate(item.date)}</p>
                   </div>
                 </div>
                 <span className="text-xs font-black text-emerald-500">+{item.points} pts</span>

@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, CartItem, PurchasedDevice, UserRole, MembershipTier } from './types';
-import { PRODUCTS as INITIAL_PRODUCTS } from './constants';
 import { supabase } from './services/supabase';
 import { Session, User } from '@supabase/supabase-js';
 
@@ -42,10 +41,7 @@ const URGENCY_FEE = 50;
 const LIQUIDITY_BUFFER = 500;
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [inventory, setInventory] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('inventory');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
+  const [inventory, setInventory] = useState<Product[]>([]);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('cart');
@@ -109,7 +105,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
 
+    const fetchInventory = async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching inventory:', error);
+      } else {
+        setInventory(data || []);
+      }
+    };
+
     initSession();
+    fetchInventory();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
@@ -148,9 +158,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [useTradeIn, setUseTradeIn] = useState(false);
 
-  useEffect(() => {
-    localStorage.setItem('inventory', JSON.stringify(inventory));
-  }, [inventory]);
+
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
@@ -218,21 +226,99 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   };
 
-  const confirmPurchase = () => {
+  const confirmPurchase = async () => {
     const { cash, isViable } = calculateDowngradeCash();
+
+    // Logic for liquidity and cash return
     if (cash > 0 && isViable) {
       setBusinessLiquidity(prev => prev - cash);
     }
+
+    if (!user) return; // Cannot save if not logged in
+
+    // 1. Create Purchase Records
+    const purchases = cart.map(item => ({
+      user_id: user.id,
+      product_id: item.id,
+      purchase_price: item.price,
+      details: item,
+      status: 'completed'
+    }));
+
+    const { error: purchaseError } = await supabase.from('purchases').insert(purchases);
+    if (purchaseError) {
+      console.error('Error recording purchase:', purchaseError);
+      return;
+    }
+
+    // 2. Update Stock (simple decrement for now, can be improved with RPC)
+    // Note: This loop is not atomic, in production use a PG function or single batch update if possible
+    for (const item of cart) {
+      const product = inventory.find(p => p.id === item.id);
+      if (product) {
+        await supabase.from('products').update({ stock: Math.max(0, (product.stock || 1) - item.quantity) }).eq('id', item.id);
+      }
+    }
+
+    // 3. Update User Points
+    // Calculate points: 1 point per $10 spent (example logic)
+    const totalSpent = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const newPoints = Math.floor(totalSpent / 10);
+
+    const { error: pointsError } = await supabase.rpc('increment_points', { user_id: user.id, amount: newPoints });
+
+    // Fallback if RPC doesnt exist (update manually)
+    if (pointsError) {
+      // Fetch current points strictly to be safe, though we have userPoints state
+      const { data: currentData } = await supabase.from('profiles').select('points').eq('id', user.id).single();
+      const currentPoints = currentData?.points || 0;
+      await supabase.from('profiles').update({ points: currentPoints + newPoints }).eq('id', user.id);
+    }
+
+    // 4. Refresh Data
+    fetchProfile(user.id);
+    const { data: refreshedInventory } = await supabase.from('products').select('*').order('name');
+    if (refreshedInventory) setInventory(refreshedInventory);
+
     setCart([]);
     setUseTradeIn(false);
   };
 
-  const addInventoryItem = (product: Product) => setInventory(prev => [product, ...prev]);
-  const updateInventoryItem = (product: Product) => setInventory(prev => prev.map(p => p.id === product.id ? product : p));
-  const deleteInventoryItem = (productId: string) => {
-    setInventory(prev => prev.filter(p => p.id !== productId));
-    setCart(prev => prev.filter(p => p.id !== productId));
-    setSavedIds(prev => prev.filter(id => id !== productId));
+  const addInventoryItem = async (product: Product) => {
+    // Remove id if it is custom temporary id, let DB assign UUID
+    const { id, ...rest } = product;
+    // or if we want to allow custom IDs, keep it. But usually uuid_generate_v4() is better.
+    // If the tool sent a custom- timestamp id, we should probably ignore it and let Supabase generate one, 
+    // unless we actually want that specific ID.
+    // For now, let's try to insert. If product.id is 'custom-...', remove it.
+    const payload = id.startsWith('custom-') ? rest : product;
+
+    const { data, error } = await supabase.from('products').insert([payload]).select().single();
+    if (error) {
+      console.error('Error adding product:', error);
+    } else if (data) {
+      setInventory(prev => [data, ...prev]);
+    }
+  };
+
+  const updateInventoryItem = async (product: Product) => {
+    const { error } = await supabase.from('products').update(product).eq('id', product.id);
+    if (error) {
+      console.error('Error updating product:', error);
+    } else {
+      setInventory(prev => prev.map(p => p.id === product.id ? product : p));
+    }
+  };
+
+  const deleteInventoryItem = async (productId: string) => {
+    const { error } = await supabase.from('products').delete().eq('id', productId);
+    if (error) {
+      console.error('Error deleting product:', error);
+    } else {
+      setInventory(prev => prev.filter(p => p.id !== productId));
+      setCart(prev => prev.filter(p => p.id !== productId));
+      setSavedIds(prev => prev.filter(id => id !== productId));
+    }
   };
 
   const addToCart = (product: Product) => {
