@@ -17,7 +17,8 @@ const ProductDetailScreen: React.FC = () => {
   useEffect(() => {
     if (product) {
       setLoadingAi(true);
-      const specsStr = product.specs.map(s => `${s.label}: ${s.value}`).join(', ');
+      const specs = product.specs || [];
+      const specsStr = specs.map(s => `${s.label}: ${s.value}`).join(', ');
       getAiInsights(product.name, specsStr).then(insight => {
         setAiInsight(insight || null);
         setLoadingAi(false);
@@ -43,12 +44,14 @@ const ProductDetailScreen: React.FC = () => {
   );
 
   const savingsPercent = product.originalPrice ? Math.round((1 - product.price / product.originalPrice) * 100) : 0;
+  const safeThumbnails = product.thumbnails || [];
+  const safeSpecs = product.specs || [];
 
   return (
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased">
       {/* Top Navigation Bar - Changed from fixed to sticky for better reliability */}
       <div className="sticky top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-transparent dark:border-transparent transition-colors duration-200">
-        <button 
+        <button
           onClick={handleBack}
           className="flex size-10 items-center justify-center rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 active:scale-95 transition-all text-slate-900 dark:text-white"
         >
@@ -62,17 +65,17 @@ const ProductDetailScreen: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="relative flex flex-col pb-40">
-        
+
         {/* Main Image & Carousel Adapt */}
         <div className="w-full px-4 mb-6 mt-4">
           <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-surface-dark/50 shadow-sm border border-slate-200 dark:border-slate-800">
             <img src={product.imageUrl} className="w-full h-full object-cover" alt={product.name} />
-            
+
             {/* Overlay Gradient */}
             <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/40 to-transparent"></div>
-            
+
             {/* Favorite FAB */}
-            <button 
+            <button
               onClick={() => toggleSaved(product.id)}
               className={`absolute top-3 right-3 flex size-8 items-center justify-center rounded-full bg-black/20 backdrop-blur-md transition-colors ${isSaved(product.id) ? 'text-red-500' : 'text-white'}`}
             >
@@ -85,7 +88,7 @@ const ProductDetailScreen: React.FC = () => {
             <div className="shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-primary cursor-pointer p-0.5 bg-background-light dark:bg-background-dark">
               <img src={product.imageUrl} className="w-full h-full rounded-lg object-cover" />
             </div>
-            {product.thumbnails && product.thumbnails.map((thumb, i) => (
+            {safeThumbnails.map((thumb, i) => (
               <div key={i} className="shrink-0 w-20 h-20 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
                 <img src={thumb} className="w-full h-full rounded-lg object-cover" />
               </div>
@@ -118,10 +121,10 @@ const ProductDetailScreen: React.FC = () => {
               Calidad Certificada
             </div>
           </div>
-          
+
           <h1 className="text-2xl font-bold leading-tight tracking-tight mb-1 text-slate-900 dark:text-white">{product.name}</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-4">{product.storage} • {product.color} • Libre</p>
-          
+
           <div className="flex items-end gap-3 mb-6 border-b border-slate-200 dark:border-slate-800 pb-6">
             <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">${product.price}.00</span>
             {product.originalPrice && (
@@ -137,7 +140,7 @@ const ProductDetailScreen: React.FC = () => {
         <div className="px-4 mb-6">
           <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">Detalles del Dispositivo</h3>
           <div className="grid grid-cols-2 gap-3">
-            {product.specs.map((spec, idx) => (
+            {safeSpecs.map((spec, idx) => (
               <div key={idx} className="flex flex-col gap-2 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-surface-light dark:bg-surface-dark">
                 <div className="flex items-center justify-between">
                   <span className={`material-symbols-outlined ${idx === 0 ? 'text-green-500' : idx === 1 ? 'text-primary' : idx === 2 ? 'text-purple-500' : 'text-orange-500'}`}>{spec.icon}</span>
@@ -158,11 +161,11 @@ const ProductDetailScreen: React.FC = () => {
             <p className={showFullDescription ? "" : "line-clamp-3"}>
               {product.description}
             </p>
-            <button 
+            <button
               onClick={() => setShowFullDescription(!showFullDescription)}
               className="text-primary font-semibold mt-1 flex items-center gap-1 text-sm"
             >
-              {showFullDescription ? "Leer menos" : "Leer más"} 
+              {showFullDescription ? "Leer menos" : "Leer más"}
               <span className={`material-symbols-outlined text-[16px] transition-transform ${showFullDescription ? 'rotate-180' : ''}`}>expand_more</span>
             </button>
           </div>
@@ -177,7 +180,7 @@ const ProductDetailScreen: React.FC = () => {
             <span className="text-xl font-bold text-slate-900 dark:text-white">${product.price}.00</span>
           </div>
           <div className="flex flex-1 gap-2">
-            <button 
+            <button
               onClick={() => {
                 addToCart(product);
                 navigate('/cart');
@@ -186,7 +189,7 @@ const ProductDetailScreen: React.FC = () => {
             >
               Carrito
             </button>
-            <button 
+            <button
               className="flex-[1.5] bg-[#25D366] hover:bg-[#20bd5a] active:bg-[#1da850] text-white h-12 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 shadow-lg shadow-green-500/20 transition-all transform active:scale-[0.98]"
             >
               WhatsApp
