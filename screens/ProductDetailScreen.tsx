@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 import { useAppContext } from '../AppContext';
 
@@ -10,6 +11,7 @@ const ProductDetailScreen: React.FC = () => {
   const { toggleSaved, isSaved, addToCart, inventory } = useAppContext();
   /* State for gallery */
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
   const product = inventory.find(p => p.id === id);
@@ -78,18 +80,49 @@ const ProductDetailScreen: React.FC = () => {
       {/* Main Content Area */}
       <div className="relative flex flex-col pb-40">
 
-        {/* Main Image & Carousel Adapt */}
+        {/* Main Image Carousel & Thumbnails */}
         <div className="w-full px-4 mb-6 mt-4">
           <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-surface-dark/50 shadow-sm border border-slate-200 dark:border-slate-800">
-            {/* Main Image with defensive layout */}
-            <img
-              src={currentImage}
-              className="absolute inset-0 w-full h-full object-cover"
-              alt={product.name}
-            />
+            {/* Scrollable Container (Native Swipe) */}
+            <div
+              id="main-carousel"
+              className="flex w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth"
+              onScroll={(e) => {
+                const scrollLeft = e.currentTarget.scrollLeft;
+                const width = e.currentTarget.clientWidth;
+                const index = Math.round(scrollLeft / width);
+                if (allImages[index] && selectedImage !== allImages[index]) {
+                  setSelectedImage(allImages[index]);
+                }
+              }}
+            >
+              {allImages.map((img, idx) => (
+                <div key={idx} className="flex-none w-full h-full snap-center flex items-center justify-center bg-black/5">
+                  <img
+                    src={img}
+                    className="w-full h-full object-cover cursor-zoom-in active:scale-[0.98] transition-transform duration-200 will-change-transform image-crisp"
+                    alt={`${product.name} - Vista ${idx + 1}`}
+                    onClick={() => setIsModalOpen(true)}
+                    loading={idx === 0 ? "eager" : "lazy"}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination Dots (Optional, if only 1 image hide) */}
+            {allImages.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 px-3 py-1.5 rounded-full bg-black/20 backdrop-blur-md">
+                {allImages.map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${selectedImage === allImages[idx] ? 'bg-white w-3' : 'bg-white/50'}`}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Overlay Gradient */}
-            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
 
             {/* Favorite FAB */}
             <button
@@ -100,18 +133,30 @@ const ProductDetailScreen: React.FC = () => {
             </button>
           </div>
 
-          {/* Thumbnails Preview - Only if more than 1 image */}
+          {/* Thumbnails Preview */}
           {allImages.length > 1 && (
-            <div className="flex gap-3 mt-4 overflow-x-auto no-scrollbar py-1">
-              {allImages.map((img, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedImage(img)}
-                  className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 cursor-pointer p-0.5 transition-all ${currentImage === img ? 'border-primary opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                >
-                  <img src={img} className="w-full h-full rounded-lg object-cover" alt={`Vista ${i}`} />
-                </button>
-              ))}
+            <div className="flex gap-3 mt-4 overflow-x-auto no-scrollbar py-1 px-1">
+              {allImages.map((img, idx) => {
+                const isActive = selectedImage === img; // or simplified check
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedImage(img);
+                      const carousel = document.getElementById('main-carousel');
+                      if (carousel) {
+                        carousel.scrollTo({
+                          left: idx * carousel.clientWidth,
+                          behavior: 'smooth'
+                        });
+                      }
+                    }}
+                    className={`shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 cursor-pointer p-0.5 transition-all ${isActive ? 'border-primary opacity-100 ring-2 ring-primary/20' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                  >
+                    <img src={img} className="w-full h-full rounded-lg object-cover" alt={`Thumb ${idx}`} />
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -162,6 +207,89 @@ const ProductDetailScreen: React.FC = () => {
               </div>
             ))}
           </div>
+          {/* Fullscreen Zoom Modal */}
+          {isModalOpen && (
+            <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col animate-fadeIn">
+              {/* Modal Header */}
+              <div className="absolute top-0 w-full z-20 flex justify-between p-4">
+                <h3 className="text-white/80 font-medium text-sm px-4 py-2 rounded-full bg-black/20 backdrop-blur-md">
+                  {allImages.indexOf(selectedImage || "") + 1} / {allImages.length}
+                </h3>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="size-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              {/* Zoomable Content */}
+              <div className="flex-1 flex items-center justify-center w-full h-full overflow-hidden relative">
+                {/* Note: Implementing swipe inside zoom modal is complex. 
+                 We will use arrows for desktop and simple touch area detection or keep it simple with click-navigation for next/prev if needed.
+                 Standard 'Premium' Lightboxes use swipe. 
+                 Let's stick to a single Zoom View for the selected image, 
+                 and allow changing images via thumbnails at the bottom of the modal or left/right click areas.
+             */}
+                <TransformWrapper
+                  initialScale={1}
+                  minScale={1}
+                  maxScale={4}
+                  centerOnInit
+                  wheel={{ step: 0.2 }}
+                >
+                  <TransformComponent wrapperClass="!w-full !h-full" contentClass="!w-full !h-full flex items-center justify-center">
+                    <img
+                      src={selectedImage || product.imageUrl}
+                      className="w-full h-full object-contain max-h-screen"
+                      alt="Zoom view"
+                    />
+                  </TransformComponent>
+                </TransformWrapper>
+
+                {/* Navigation Areas (Invisible Buttons for easy nav) */}
+                <div className="absolute inset-y-0 left-0 w-1/4 z-10 flex items-center pl-4 opacity-0 hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const idx = allImages.indexOf(selectedImage || "");
+                      const prev = idx > 0 ? allImages[idx - 1] : allImages[allImages.length - 1];
+                      setSelectedImage(prev);
+                    }}
+                    className="p-3 rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20"
+                  >
+                    <span className="material-symbols-outlined">chevron_left</span>
+                  </button>
+                </div>
+                <div className="absolute inset-y-0 right-0 w-1/4 z-10 flex items-center justify-end pr-4 opacity-0 hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const idx = allImages.indexOf(selectedImage || "");
+                      const next = idx < allImages.length - 1 ? allImages[idx + 1] : allImages[0];
+                      setSelectedImage(next);
+                    }}
+                    className="p-3 rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20"
+                  >
+                    <span className="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Thumbnails */}
+              <div className="w-full p-4 pb-8 overflow-x-auto no-scrollbar flex justify-center gap-2 z-20">
+                {allImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(img)}
+                    className={`w-12 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${selectedImage === img ? 'border-white scale-110 opacity-100' : 'border-transparent opacity-50 hover:opacity-80'}`}
+                  >
+                    <img src={img} className="w-full h-full object-cover" alt="thumb" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Description Section */}
