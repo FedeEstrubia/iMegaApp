@@ -101,7 +101,11 @@ const MarketplaceScreen: React.FC = () => {
                     <span className={`material-symbols-outlined text-[18px] ${isSaved(product.id) ? 'font-variation-settings-fill' : ''}`}>favorite</span>
                   </button>
                 </div>
-                <div className="w-full h-full bg-center bg-cover transform group-hover:scale-105 transition-transform duration-300" style={{ backgroundImage: `url('${product.imageUrl}')` }}></div>
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="absolute inset-0 w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-105"
+                />
               </Link>
               <div className="flex flex-col gap-1">
                 <h3 className="text-gray-900 dark:text-white text-sm font-semibold leading-tight line-clamp-1">{product.name}</h3>
