@@ -1,15 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getAiInsights } from '../services/geminiService';
+
 import { useAppContext } from '../AppContext';
 
 const ProductDetailScreen: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toggleSaved, isSaved, addToCart, inventory } = useAppContext();
-  const [aiInsight, setAiInsight] = useState<string | null>(null);
-  const [loadingAi, setLoadingAi] = useState(false);
   /* State for gallery */
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -20,14 +18,6 @@ const ProductDetailScreen: React.FC = () => {
     if (product) {
       /* Initialize selected image */
       setSelectedImage(product.imageUrl);
-
-      setLoadingAi(true);
-      const specs = product.specs || [];
-      const specsStr = specs.map(s => `${s.label}: ${s.value}`).join(', ');
-      getAiInsights(product.name, specsStr).then(insight => {
-        setAiInsight(insight || null);
-        setLoadingAi(false);
-      });
     }
   }, [product]);
 
@@ -127,17 +117,7 @@ const ProductDetailScreen: React.FC = () => {
         </div>
 
         {/* AI Insight Box */}
-        <div className="px-4 mb-6">
-          <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 dark:bg-primary/10 dark:border-primary/20 backdrop-blur-sm">
-            <div className="flex items-center gap-2 mb-2 text-primary">
-              <span className="material-symbols-outlined text-[18px]">bolt</span>
-              <span className="text-xs font-bold uppercase tracking-wider">Análisis de IA</span>
-            </div>
-            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed italic">
-              {loadingAi ? "Analizando valor del dispositivo..." : aiInsight}
-            </p>
-          </div>
-        </div>
+
 
         {/* Title and Price Block */}
         <div className="px-4 pb-2">
