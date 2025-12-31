@@ -3,31 +3,28 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { REWARD_HISTORY } from '../constants';
 import { useAppContext } from '../AppContext';
-import { MembershipTier } from '../types';
+import { supabase } from '../services/supabase';
 
 const ProfileScreen: React.FC = () => {
   const navigate = useNavigate();
-  const { 
-    cart, 
-    userRole, 
-    setUserRole, 
-    userDevice, 
-    simulatedTier, 
-    setSimulatedTier, 
-    getCurrentTier 
+  const {
+    cart,
+    user,
+    session,
+    userRole,
+    userDevice,
+    getCurrentTier
   } = useAppContext();
-  
+
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const userEmail = localStorage.getItem('userEmail') || 'invitado@ejemplo.com';
-  const userName = userEmail.split('@')[0];
+  const userEmail = user?.email || session?.user?.email || '';
+  const userName = userEmail ? userEmail.split('@')[0] : 'Usuario';
   const isAdmin = userRole === 'admin';
   const currentTier = getCurrentTier();
 
-  const handleLogout = () => {
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userRole');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem('simulatedTier');
-    setUserRole('client');
     navigate('/login');
   };
 
@@ -46,8 +43,8 @@ const ProfileScreen: React.FC = () => {
             <span className="material-symbols-outlined">arrow_back_ios_new</span>
           </button>
           <h1 className="text-lg font-semibold">Mi Perfil</h1>
-          <button 
-            onClick={handleLogout} 
+          <button
+            onClick={handleLogout}
             className="flex items-center justify-center p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-red-500 transition-colors"
           >
             <span className="material-symbols-outlined">logout</span>
@@ -70,47 +67,7 @@ const ProfileScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Herramientas de Testeo (Solo Admin) */}
-        <div className="space-y-4">
-           <h3 className="text-[10px] font-black uppercase text-slate-400 pl-1 tracking-[0.2em] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[14px]">science</span>
-              Herramientas de Testeo
-           </h3>
-           <div className="bg-white dark:bg-surface-dark rounded-2xl border border-orange-500/20 shadow-sm overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
-              {/* Admin Switch */}
-              <div className="p-4 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-bold">Modo Administrador</p>
-                  <p className="text-[10px] text-slate-500">Activa el panel y herramientas internas</p>
-                </div>
-                <button 
-                  onClick={() => setUserRole(isAdmin ? 'client' : 'admin')}
-                  className={`w-12 h-6 rounded-full transition-all relative ${isAdmin ? 'bg-primary' : 'bg-slate-300'}`}
-                >
-                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform ${isAdmin ? 'left-7' : 'left-1'}`}></div>
-                </button>
-              </div>
 
-              {/* Nivel Simulator */}
-              {isAdmin && (
-                <div className="p-4 space-y-3">
-                  <p className="text-sm font-bold">Simular Nivel de Cliente</p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {['Bronce', 'Plata', 'Oro', 'Diamante'].map(tier => (
-                      <button 
-                        key={tier}
-                        onClick={() => setSimulatedTier(tier as MembershipTier)}
-                        className={`py-1.5 rounded-lg text-[10px] font-black uppercase border transition-all ${simulatedTier === tier ? 'bg-primary border-primary text-white' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400'}`}
-                      >
-                        {tier}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-[9px] text-orange-500 italic font-medium">Esto afecta los beneficios y descuentos aplicados en la app actual.</p>
-                </div>
-              )}
-           </div>
-        </div>
 
         {/* Mi iPhone */}
         {userDevice && (
@@ -145,22 +102,22 @@ const ProfileScreen: React.FC = () => {
         <div className="space-y-3">
           <h3 className="text-[10px] font-black uppercase text-slate-400 pl-1 tracking-[0.2em]">Membresía</h3>
           <div className="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col items-center text-center">
-             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
-                <span className="material-symbols-outlined text-primary text-[20px]">workspace_premium</span>
-                <span className="text-xs font-black text-primary uppercase tracking-widest">{currentTier}</span>
-             </div>
-             <h2 className="text-4xl font-black tracking-tight mb-1 text-slate-900 dark:text-white">1,250</h2>
-             <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-6">Puntos Acumulados</p>
-             
-             <div className="w-full space-y-2 text-left">
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-400">
-                  <span>Siguiente Nivel</span>
-                  <span>750 pts faltantes</span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all duration-500" style={{width: "62%"}}></div>
-                </div>
-             </div>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
+              <span className="material-symbols-outlined text-primary text-[20px]">workspace_premium</span>
+              <span className="text-xs font-black text-primary uppercase tracking-widest">{currentTier}</span>
+            </div>
+            <h2 className="text-4xl font-black tracking-tight mb-1 text-slate-900 dark:text-white">1,250</h2>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-6">Puntos Acumulados</p>
+
+            <div className="w-full space-y-2 text-left">
+              <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-400">
+                <span>Siguiente Nivel</span>
+                <span>750 pts faltantes</span>
+              </div>
+              <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: "62%" }}></div>
+              </div>
+            </div>
           </div>
         </div>
 

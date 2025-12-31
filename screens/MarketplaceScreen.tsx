@@ -5,11 +5,11 @@ import { DeviceCondition } from '../types';
 import { useAppContext } from '../AppContext';
 
 const MarketplaceScreen: React.FC = () => {
-  const { addToCart, toggleSaved, isSaved, cart, userRole, inventory } = useAppContext();
+  const { addToCart, toggleSaved, isSaved, cart, userRole, inventory, user } = useAppContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('Todos');
 
-  const userEmail = localStorage.getItem('userEmail');
+  const userEmail = user?.email;
   const profilePath = userEmail ? "/profile" : "/login";
 
   const filters = ['Todos', 'iPhone 15', 'Pro Max', 'Reacondicionado', 'Accesorios'];
@@ -17,9 +17,9 @@ const MarketplaceScreen: React.FC = () => {
   const filteredProducts = useMemo(() => {
     return inventory.filter(p => {
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter = activeFilter === 'Todos' || 
-                           p.name.includes(activeFilter) || 
-                           (activeFilter === 'Reacondicionado' && p.condition === DeviceCondition.REFURBISHED);
+      const matchesFilter = activeFilter === 'Todos' ||
+        p.name.includes(activeFilter) ||
+        (activeFilter === 'Reacondicionado' && p.condition === DeviceCondition.REFURBISHED);
       return matchesSearch && matchesFilter;
     });
   }, [searchQuery, activeFilter, inventory]);
@@ -34,7 +34,7 @@ const MarketplaceScreen: React.FC = () => {
         <h2 className="text-xl font-bold leading-tight tracking-tight flex-1">Mercado</h2>
         <div className="flex items-center gap-4">
           <Link to={profilePath} className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-700 overflow-hidden cursor-pointer border border-primary/20">
-            <img alt="Perfil" className="h-full w-full object-cover" src={userEmail ? `https://picsum.photos/seed/${userEmail.split('@')[0]}/100/100` : "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}/>
+            <img alt="Perfil" className="h-full w-full object-cover" src={userEmail ? `https://picsum.photos/seed/${userEmail.split('@')[0]}/100/100` : "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} />
           </Link>
         </div>
       </header>
@@ -45,8 +45,8 @@ const MarketplaceScreen: React.FC = () => {
           <div className="flex items-center justify-center pl-4 text-gray-400 dark:text-secondary-text">
             <span className="material-symbols-outlined text-[20px]">search</span>
           </div>
-          <input 
-            className="w-full flex-1 bg-transparent px-3 py-3 text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-secondary-text focus:outline-none" 
+          <input
+            className="w-full flex-1 bg-transparent px-3 py-3 text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-secondary-text focus:outline-none"
             placeholder="Buscar dispositivos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -57,7 +57,7 @@ const MarketplaceScreen: React.FC = () => {
       <div className="w-full overflow-x-auto no-scrollbar pb-2">
         <div className="flex gap-3 px-5 min-w-max">
           {filters.map(f => (
-            <button 
+            <button
               key={f}
               onClick={() => setActiveFilter(f)}
               className={`flex h-9 items-center justify-center px-5 rounded-full transition-all active:scale-95 ${activeFilter === f ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200'}`}
@@ -73,7 +73,7 @@ const MarketplaceScreen: React.FC = () => {
         <div className="px-5 py-4">
           <Link to="/product/15-pro-max" className="block relative w-full h-48 rounded-xl overflow-hidden shadow-lg group cursor-pointer">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-primary opacity-80 z-10"></div>
-            <div className="absolute inset-0 bg-center bg-cover transition-transform duration-700 group-hover:scale-105" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBR5Izyj_DmAYl2q5CwyScxnvWbkWz4GlhegXOdnMRCi9kxUz1-ctJyQk-VFCYBlIq-jGaHDddM0BdAPydoUxCthDPHT_rK2pSTP2UPh0Z1UxbwDSMucABqjgQbI5oO0HGcSChqeLNW7iFs5-aWssEccDujH2x9AZ3tv5FhInXmNPuUnwR1pbT0jxTfWoNlWumtbyyYN7zFsV1_ZSpmvJemUL5Ji_qkBjRuH6QLpSwXglmuhNOdnKtq6NNAKvLo44ROY4ow2GhBzpY')"}}></div>
+            <div className="absolute inset-0 bg-center bg-cover transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBR5Izyj_DmAYl2q5CwyScxnvWbkWz4GlhegXOdnMRCi9kxUz1-ctJyQk-VFCYBlIq-jGaHDddM0BdAPydoUxCthDPHT_rK2pSTP2UPh0Z1UxbwDSMucABqjgQbI5oO0HGcSChqeLNW7iFs5-aWssEccDujH2x9AZ3tv5FhInXmNPuUnwR1pbT0jxTfWoNlWumtbyyYN7zFsV1_ZSpmvJemUL5Ji_qkBjRuH6QLpSwXglmuhNOdnKtq6NNAKvLo44ROY4ow2GhBzpY')" }}></div>
             <div className="absolute inset-0 z-20 flex flex-col justify-center px-6">
               <span className="text-primary-100 text-xs font-bold uppercase tracking-wider mb-2 bg-primary/30 w-fit px-2 py-1 rounded backdrop-blur-sm">Recién Llegado</span>
               <h3 className="text-white text-2xl font-bold mb-1">iPhone 15 Pro</h3>
@@ -88,21 +88,21 @@ const MarketplaceScreen: React.FC = () => {
             <div key={product.id} className="flex flex-col gap-2 p-3 rounded-xl bg-white dark:bg-surface-dark shadow-sm border border-gray-100 dark:border-gray-800 group hover:shadow-md transition-shadow">
               <Link to={`/product/${product.id}`} className="relative w-full aspect-[4/5] bg-gray-50 dark:bg-[#111a22] rounded-lg overflow-hidden flex items-center justify-center p-4">
                 <div className="absolute top-2 right-2 z-10">
-                  <button 
+                  <button
                     className={`flex items-center justify-center h-8 w-8 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-sm transition-colors ${isSaved(product.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleSaved(product.id); }}
                   >
                     <span className={`material-symbols-outlined text-[18px] ${isSaved(product.id) ? 'font-variation-settings-fill' : ''}`}>favorite</span>
                   </button>
                 </div>
-                <div className="w-full h-full bg-center bg-contain bg-no-repeat transform group-hover:scale-105 transition-transform duration-300" style={{backgroundImage: `url('${product.imageUrl}')`}}></div>
+                <div className="w-full h-full bg-center bg-contain bg-no-repeat transform group-hover:scale-105 transition-transform duration-300" style={{ backgroundImage: `url('${product.imageUrl}')` }}></div>
               </Link>
               <div className="flex flex-col gap-1">
                 <h3 className="text-gray-900 dark:text-white text-sm font-semibold leading-tight line-clamp-1">{product.name}</h3>
                 <p className="text-secondary-text text-xs font-medium">{product.storage}</p>
                 <div className="flex items-center justify-between mt-2">
                   <p className="text-primary text-base font-bold">${product.price}</p>
-                  <button 
+                  <button
                     onClick={() => addToCart(product)}
                     className="h-8 w-8 flex items-center justify-center rounded-full bg-primary text-white active:scale-90 transition-transform"
                   >

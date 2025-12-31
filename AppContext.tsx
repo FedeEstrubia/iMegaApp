@@ -13,12 +13,12 @@ interface AppContextType {
   session: Session | null;
   authLoading: boolean;
   userRole: UserRole;
-  simulatedTier: MembershipTier | null;
+  userTier: MembershipTier;
+  userPoints: number;
   userDevice: PurchasedDevice | null;
   useTradeIn: boolean;
   businessLiquidity: number;
   setUserRole: (role: UserRole) => void;
-  setSimulatedTier: (tier: MembershipTier | null) => void;
   setUseTradeIn: (val: boolean) => void;
   setBusinessLiquidity: (val: number) => void;
   addToCart: (product: Product) => void;
@@ -41,14 +41,6 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const URGENCY_FEE = 50;
 const LIQUIDITY_BUFFER = 500;
 
-const MOCK_USER_DEVICE: PurchasedDevice = {
-  model: 'iPhone 14 Pro Max',
-  storage: '256GB',
-  color: 'Deep Purple',
-  purchaseDate: new Date(new Date().setMonth(new Date().getMonth() - 8)).toISOString(),
-  purchasePrice: 1099
-};
-
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [inventory, setInventory] = useState<Product[]>(() => {
     const saved = localStorage.getItem('inventory');
@@ -69,12 +61,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [userRole, setUserRoleState] = useState<UserRole>('client');
+  const [userTier, setUserTier] = useState<MembershipTier>('Bronce');
+  const [userPoints, setUserPoints] = useState<number>(0);
 
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('role, membership_tier')
+        .select('role, membership_tier, points')
         .eq('id', userId)
         .single();
 
@@ -85,8 +79,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (data) {
         setUserRoleState(data.role as UserRole);
-        // We could also set the actual tier from DB here
-        // setRealTier(data.membership_tier);
+        setUserTier(data.membership_tier as MembershipTier);
+        setUserPoints(data.points || 0);
       }
     } catch (err) {
       console.error('Error in fetchProfile:', err);
@@ -131,6 +125,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         fetchProfile(session.user.id);
       } else {
         setUserRoleState('client'); // Reset to default on logout
+        setUserTier('Bronce');
+        setUserPoints(0);
       }
     });
 
@@ -140,14 +136,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, []);
 
-  const [simulatedTier, setSimulatedTier] = useState<MembershipTier | null>(() => {
-    const saved = localStorage.getItem('simulatedTier');
-    return saved ? (saved as MembershipTier) : null;
-  });
-
   const [userDevice, setUserDevice] = useState<PurchasedDevice | null>(() => {
     const saved = localStorage.getItem('userDevice');
-    return saved ? JSON.parse(saved) : MOCK_USER_DEVICE;
+    return saved ? JSON.parse(saved) : null;
   });
 
   const [businessLiquidity, setBusinessLiquidity] = useState(() => {
@@ -173,19 +164,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('userRole', userRole);
   }, [userRole]);
 
-  useEffect(() => {
-    if (simulatedTier) localStorage.setItem('simulatedTier', simulatedTier);
-    else localStorage.removeItem('simulatedTier');
-  }, [simulatedTier]);
-
   const setUserRole = (role: UserRole) => {
     setUserRoleState(role);
-    if (role === 'client') setSimulatedTier(null);
   };
 
   const getCurrentTier = (): MembershipTier => {
-    if (userRole === 'admin' && simulatedTier) return simulatedTier;
-    return 'Plata'; // Nivel por defecto del usuario real mock
+    return userTier;
   };
 
   const getTierDiscount = () => {
@@ -288,8 +272,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      inventory, cart, savedIds, user, session, authLoading, userRole, simulatedTier, userDevice, useTradeIn, businessLiquidity,
-      setUserRole, setSimulatedTier, setUseTradeIn, setBusinessLiquidity,
+      inventory, cart, savedIds, user, session, authLoading,
+      userRole, userTier, userPoints, userDevice, useTradeIn, businessLiquidity,
+      setUserRole, setUseTradeIn, setBusinessLiquidity,
       addToCart, removeFromCart, updateQuantity, toggleSaved, isSaved,
       addInventoryItem, updateInventoryItem, deleteInventoryItem,
       calculateTradeInValue, calculateDowngradeCash, confirmPurchase,
