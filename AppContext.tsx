@@ -11,6 +11,7 @@ interface AppContextType {
   savedIds: string[];
   user: User | null;
   session: Session | null;
+  authLoading: boolean;
   userRole: UserRole;
   simulatedTier: MembershipTier | null;
   userDevice: PurchasedDevice | null;
@@ -66,27 +67,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [userRole, setUserRoleState] = useState<UserRole>('client');
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setUserRoleState('client'); // Reset to default on logout
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -103,14 +85,60 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (data) {
         setUserRoleState(data.role as UserRole);
-        // We could also set the actual tier from DB here, but keeping simulatedTier logic for now as requested
-        // Or if we want to sync real tier:
+        // We could also set the actual tier from DB here
         // setRealTier(data.membership_tier);
       }
     } catch (err) {
       console.error('Error in fetchProfile:', err);
     }
   };
+
+  useEffect(() => {
+    let mounted = true;
+
+    // Initial session check
+    const initSession = async () => {
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+
+        if (mounted) {
+          if (initialSession) {
+            setSession(initialSession);
+            setUser(initialSession.user);
+            await fetchProfile(initialSession.user.id);
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing session:', error);
+      } finally {
+        if (mounted) setAuthLoading(false);
+      }
+    };
+
+    initSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
+      setSession(session);
+      setUser(session?.user ?? null);
+
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
+        setAuthLoading(false);
+      }
+
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setUserRoleState('client'); // Reset to default on logout
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const [simulatedTier, setSimulatedTier] = useState<MembershipTier | null>(() => {
     const saved = localStorage.getItem('simulatedTier');
@@ -245,9 +273,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleSaved = (productId: string) => setSavedIds(prev => prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]);
   const isSaved = (productId: string) => savedIds.includes(productId);
 
+  if (authLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background-light dark:bg-background-dark">
+        <div className="flex flex-col items-center gap-4">
+          <div className="size-16 rounded-2xl bg-gradient-to-br from-blue-500 to-primary flex items-center justify-center shadow-lg shadow-primary/20 animate-pulse">
+            <span className="material-symbols-outlined text-white text-[32px]">bolt</span>
+          </div>
+          <p className="text-sm font-medium text-secondary-text animate-pulse">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AppContext.Provider value={{
-      inventory, cart, savedIds, user, session, userRole, simulatedTier, userDevice, useTradeIn, businessLiquidity,
+      inventory, cart, savedIds, user, session, authLoading, userRole, simulatedTier, userDevice, useTradeIn, businessLiquidity,
       setUserRole, setSimulatedTier, setUseTradeIn, setBusinessLiquidity,
       addToCart, removeFromCart, updateQuantity, toggleSaved, isSaved,
       addInventoryItem, updateInventoryItem, deleteInventoryItem,
