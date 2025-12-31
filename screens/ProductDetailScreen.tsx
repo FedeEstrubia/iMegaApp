@@ -10,12 +10,17 @@ const ProductDetailScreen: React.FC = () => {
   const { toggleSaved, isSaved, addToCart, inventory } = useAppContext();
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
+  /* State for gallery */
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
   const product = inventory.find(p => p.id === id);
 
   useEffect(() => {
     if (product) {
+      /* Initialize selected image */
+      setSelectedImage(product.imageUrl);
+
       setLoadingAi(true);
       const specs = product.specs || [];
       const specsStr = specs.map(s => `${s.label}: ${s.value}`).join(', ');
@@ -44,7 +49,24 @@ const ProductDetailScreen: React.FC = () => {
   );
 
   const savingsPercent = product.originalPrice ? Math.round((1 - product.price / product.originalPrice) * 100) : 0;
-  const safeThumbnails = product.thumbnails || [];
+
+  /* Gallery Logic */
+  const safeThumbnails = Array.isArray(product.thumbnails) ? product.thumbnails : [];
+  // Main image is always first, then thumbnails from DB (which might be the same or additional images)
+  // If thumbnails already includes main image or logic differs, adjust. 
+  // Requirement: "si images is null or undefined, use empty array".
+  // Note: AppContext maps 'images' to 'thumbnails'.
+  // We want a unified list of unique images to show in gallery if > 1.
+
+  // Construct gallery list: Main Image + Thumbnails. Filter out duplicates if any.
+  // Actually, standard practice: Start with product.imageUrl. 
+  // If thumbnails exist, they might be ALL images or just extra ones.
+  // Let's assume thumbnails contains ALL images including main, or just extras.
+  // Safe approach: Combine and deduplicate.
+  const allImages = [product.imageUrl, ...safeThumbnails].filter((img, index, self) => img && self.indexOf(img) === index);
+
+  const currentImage = selectedImage || product.imageUrl;
+
   const safeSpecs = product.specs || [];
 
   return (
@@ -69,10 +91,15 @@ const ProductDetailScreen: React.FC = () => {
         {/* Main Image & Carousel Adapt */}
         <div className="w-full px-4 mb-6 mt-4">
           <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-surface-dark/50 shadow-sm border border-slate-200 dark:border-slate-800">
-            <img src={product.imageUrl} className="w-full h-full object-cover" alt={product.name} />
+            {/* Main Image with defensive layout */}
+            <img
+              src={currentImage}
+              className="absolute inset-0 w-full h-full object-cover"
+              alt={product.name}
+            />
 
             {/* Overlay Gradient */}
-            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/40 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
 
             {/* Favorite FAB */}
             <button
@@ -83,17 +110,20 @@ const ProductDetailScreen: React.FC = () => {
             </button>
           </div>
 
-          {/* Thumbnails Preview */}
-          <div className="flex gap-3 mt-4 overflow-x-auto no-scrollbar py-1">
-            <div className="shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-primary cursor-pointer p-0.5 bg-background-light dark:bg-background-dark">
-              <img src={product.imageUrl} className="w-full h-full rounded-lg object-cover" />
+          {/* Thumbnails Preview - Only if more than 1 image */}
+          {allImages.length > 1 && (
+            <div className="flex gap-3 mt-4 overflow-x-auto no-scrollbar py-1">
+              {allImages.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSelectedImage(img)}
+                  className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 cursor-pointer p-0.5 transition-all ${currentImage === img ? 'border-primary opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                >
+                  <img src={img} className="w-full h-full rounded-lg object-cover" alt={`Vista ${i}`} />
+                </button>
+              ))}
             </div>
-            {safeThumbnails.map((thumb, i) => (
-              <div key={i} className="shrink-0 w-20 h-20 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
-                <img src={thumb} className="w-full h-full rounded-lg object-cover" />
-              </div>
-            ))}
-          </div>
+          )}
         </div>
 
         {/* AI Insight Box */}

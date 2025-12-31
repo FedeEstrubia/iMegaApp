@@ -95,6 +95,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const mappedData = (data || []).map((p: any) => ({
         ...p,
         imageUrl: p.image_url || p.imageUrl || 'https://placehold.co/400x500/101922/FFF?text=Sin+Imagen',
+        thumbnails: p.images || p.thumbnails || [],
         costPrice: p.cost_price || p.costPrice,
         originalPrice: p.original_price || p.originalPrice,
         batteryHealth: p.battery_health || p.batteryHealth,
