@@ -8,13 +8,13 @@ import { useAppContext } from '../AppContext';
 const ProductDetailScreen: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { toggleSaved, isSaved, addToCart, inventory } = useAppContext();
+  const { toggleSaved, isSaved, addToCart, inventory, cases, accessories } = useAppContext();
   /* State for gallery */
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
-  const product = inventory.find(p => p.id === id);
+  const product = inventory.find(p => p.id === id) || cases.find(p => p.id === id) || accessories.find(p => p.id === id);
 
   useEffect(() => {
     if (product) {
@@ -35,7 +35,7 @@ const ProductDetailScreen: React.FC = () => {
     <div className="flex flex-col items-center justify-center h-screen p-6 text-center bg-background-light dark:bg-background-dark">
       <span className="material-symbols-outlined text-slate-300 text-6xl mb-4">search_off</span>
       <h2 className="text-xl font-bold">Producto no encontrado</h2>
-      <p className="text-slate-500 mb-6">Parece que este iPhone ya no está disponible en nuestro catálogo.</p>
+      <p className="text-slate-500 mb-6">Parece que este producto ya no está disponible en nuestro catálogo.</p>
       <button onClick={() => navigate('/')} className="bg-primary text-white px-6 py-2 rounded-xl font-bold">Volver al Mercado</button>
     </div>
   );
