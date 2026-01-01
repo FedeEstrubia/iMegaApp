@@ -147,8 +147,12 @@ const AccessoriesScreen: React.FC = () => {
             <nav className="absolute bottom-0 w-full z-40 bg-background-light/95 dark:bg-surface-dark/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 px-2 pt-2 pb-6">
                 <div className="flex items-center justify-around">
                     <Link to="/" className="group flex flex-1 flex-col items-center justify-end gap-1 text-gray-400 dark:text-secondary-text">
-                        <span className="material-symbols-outlined text-[24px]">home</span>
-                        <span className="text-[10px] font-medium">Inicio</span>
+                        <span className="material-symbols-outlined text-[24px]">smartphone</span>
+                        <span className="text-[10px] font-medium">Celulares</span>
+                    </Link>
+                    <Link to="/accessories" className="group flex flex-1 flex-col items-center justify-end gap-1 rounded-full text-primary">
+                        <span className="material-symbols-outlined text-[24px] font-variation-settings-fill">headphones</span>
+                        <span className="text-[10px] font-medium">Accesorios</span>
                     </Link>
                     <Link to="/saved" className="group flex flex-1 flex-col items-center justify-end gap-1 text-gray-400 dark:text-secondary-text">
                         <span className="material-symbols-outlined text-[24px]">favorite</span>
@@ -167,10 +171,6 @@ const AccessoriesScreen: React.FC = () => {
                             <span className="text-[10px] font-medium">Admin</span>
                         </Link>
                     )}
-                    <Link to={profilePath} className="group flex flex-1 flex-col items-center justify-end gap-1 text-gray-400 dark:text-secondary-text">
-                        <span className="material-symbols-outlined text-[24px]">person</span>
-                        <span className="text-[10px] font-medium">Cuenta</span>
-                    </Link>
                 </div>
             </nav>
         </div>
