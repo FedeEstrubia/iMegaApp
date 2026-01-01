@@ -46,7 +46,7 @@ const MarketplaceScreen: React.FC = () => {
             <span className="material-symbols-outlined text-[20px]">search</span>
           </div>
           <input
-            className="w-full flex-1 bg-transparent px-3 py-3 border-0 text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-secondary-text focus:outline-none"
+            className="w-full flex-1 bg-transparent px-3 py-3 border-0 focus:border-0 text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-secondary-text focus:outline-none"
             placeholder="Buscar dispositivos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
