@@ -9,6 +9,7 @@ import MembershipScreen from './screens/MembershipScreen';
 import CartScreen from './screens/CartScreen';
 import SavedScreen from './screens/SavedScreen';
 import AdminScreen from './screens/AdminScreen';
+import AccessoriesScreen from './screens/AccessoriesScreen';
 import { AppProvider } from './AppContext';
 
 const App: React.FC = () => {
@@ -18,6 +19,7 @@ const App: React.FC = () => {
         <div className="max-w-md mx-auto min-h-screen bg-background-light dark:bg-background-dark shadow-2xl relative overflow-hidden">
           <Routes>
             <Route path="/" element={<MarketplaceScreen />} />
+            <Route path="/accessories" element={<AccessoriesScreen />} />
             <Route path="/product/:id" element={<ProductDetailScreen />} />
             <Route path="/cart" element={<CartScreen />} />
             <Route path="/saved" element={<SavedScreen />} />
