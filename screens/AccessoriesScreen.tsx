@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAppContext } from '../AppContext';
 
 const AccessoriesScreen: React.FC = () => {
-    const { addToCart, toggleSaved, isSaved, cart, userRole, inventory, user } = useAppContext();
+    const { addToCart, toggleSaved, isSaved, cart, userRole, inventory, cases, accessories, user } = useAppContext();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<'Fundas' | 'Accesorios'>('Fundas');
 
@@ -14,44 +14,15 @@ const AccessoriesScreen: React.FC = () => {
     const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
     const isAdmin = userRole === 'admin';
 
-    // Filter logic:
-    // 1. Base: Filter out main iPhones/Devices unless they are explicitly accessories (checked by name keywords).
-    //    Actually, simpler: Filter by name inclusions/exclusions.
-    // 2. Tab 'Fundas': Name includes 'funda' or 'case'.
-    // 3. Tab 'Accesorios': Everything else that isn't a Phone.
-
     const filteredProducts = useMemo(() => {
-        return inventory.filter(p => {
+        const sourceData = activeTab === 'Fundas' ? cases : accessories;
+
+        return sourceData.filter(p => {
             const name = p.name.toLowerCase();
-            // Search query check
             if (searchQuery && !name.includes(searchQuery.toLowerCase())) return false;
-
-            const isCase = name.includes('funda') || name.includes('case') || name.includes('carcasa') || name.includes('protector');
-
-            // Heuristic for "Main Device" (iPhone 12, 13, etc) -> usually doesn't have "funda" but has "iphone"
-            // But we want to exclude Phones from 'Accesorios' tab.
-            // So 'Accesorios' tab = (!Phone AND !Case) OR (Explicit Accessory Keywords like Charger, Cable, Watch, AirPods)
-
-            if (activeTab === 'Fundas') {
-                return isCase;
-            } else {
-                // Accesorios: Not a case, and matches accessory keywords OR simply is not a raw iPhone.
-                // Let's rely on exclusion of "Funda" and also exclusion of typical phone names if no specific keyword found.
-                if (isCase) return false;
-
-                // Check for specific accessory keywords
-                const isAccessoryKeyword = /cargador|cable|adapter|adaptador|airpods|watch|auricular|magsafe|soporte|vidrio|glass/i.test(name);
-
-                if (isAccessoryKeyword) return true;
-
-                // If it's an iPhone without case/glass keywords, it's likely a phone. Exclude.
-                // This assumes inventory names are cleaner.
-                const isPhone = name.includes('iphone') && !isAccessoryKeyword;
-
-                return !isPhone;
-            }
+            return true;
         });
-    }, [inventory, activeTab, searchQuery]);
+    }, [cases, accessories, activeTab, searchQuery]);
 
     return (
         <div className="flex flex-col h-screen overflow-hidden bg-background-light dark:bg-background-dark">

@@ -6,6 +6,8 @@ import { Session, User } from '@supabase/supabase-js';
 
 interface AppContextType {
   inventory: Product[];
+  cases: Product[];
+  accessories: Product[];
   cart: CartItem[];
   savedIds: string[];
   user: User | null;
@@ -42,6 +44,8 @@ const LIQUIDITY_BUFFER = 500;
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [inventory, setInventory] = useState<Product[]>([]);
+  const [cases, setCases] = useState<Product[]>([]);
+  const [accessories, setAccessories] = useState<Product[]>([]);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('cart');
@@ -84,6 +88,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const fetchInventory = async () => {
+    // 1. Fetch Products (Start)
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -101,6 +106,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         batteryHealth: p.battery_health || p.batteryHealth,
       }));
       setInventory(mappedData);
+    }
+
+    // 2. Fetch Fundas
+    const { data: fundasData, error: fundasError } = await supabase.from('fundas').select('*').eq('is_active', true);
+    if (fundasData) {
+      const mappedFundas = fundasData.map((f: any) => ({
+        id: f.id,
+        name: f.name,
+        price: f.price,
+        originalPrice: 0,
+        storage: 'N/A',
+        color: f.color || 'N/A',
+        condition: 'New', // Default for accessories
+        batteryHealth: 'N/A',
+        imageUrl: (f.thumbnails && f.thumbnails[0]) || 'https://placehold.co/400x500?text=Funda',
+        thumbnails: f.thumbnails || [],
+        specs: [
+          { label: 'Marca', value: f.brand || 'Genérica' },
+          { label: 'Material', value: f.material || 'N/A' },
+          { label: 'Compatible', value: (f.compatible_models || []).join(', ') }
+        ]
+      }));
+      setCases(mappedFundas);
+    }
+
+    // 3. Fetch Accesorios
+    const { data: accData, error: accError } = await supabase.from('accesorios').select('*').eq('is_active', true);
+    if (accData) {
+      const mappedAcc = accData.map((a: any) => ({
+        id: a.id,
+        name: a.name,
+        price: a.price,
+        originalPrice: 0,
+        storage: 'N/A', // Not applicable
+        color: 'N/A',
+        condition: 'New',
+        batteryHealth: 'N/A',
+        imageUrl: (a.thumbnails && a.thumbnails[0]) || 'https://placehold.co/400x500?text=Accesorio',
+        thumbnails: a.thumbnails || [],
+        specs: [
+          { label: 'Categoría', value: a.category },
+          { label: 'Marca', value: a.brand || 'Genérica' }
+        ]
+      }));
+      setAccessories(mappedAcc);
     }
   };
 
@@ -407,7 +457,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      inventory, cart, savedIds, user, session, authLoading,
+      inventory, cases, accessories, cart, savedIds, user, session, authLoading,
       userRole, userTier, userPoints, userDevice, useTradeIn, businessLiquidity,
       setUserRole, setUseTradeIn, setBusinessLiquidity,
       addToCart, removeFromCart, updateQuantity, toggleSaved, isSaved,
