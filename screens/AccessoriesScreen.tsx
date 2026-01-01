@@ -43,7 +43,7 @@ const AccessoriesScreen: React.FC = () => {
                         <span className="material-symbols-outlined text-[20px]">search</span>
                     </div>
                     <input
-                        className="w-full flex-1 bg-transparent px-3 py-3 text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-secondary-text focus:outline-none"
+                        className="w-full flex-1 bg-transparent border-0 px-3 py-3 text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-secondary-text focus:outline-none"
                         placeholder={`Buscar en ${activeTab}...`}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
