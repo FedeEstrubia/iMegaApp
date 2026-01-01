@@ -131,7 +131,7 @@ const MarketplaceScreen: React.FC = () => {
         <div className="flex items-center justify-around">
           <Link to="/" className="group flex flex-1 flex-col items-center justify-end gap-1 rounded-full text-primary">
             <span className="material-symbols-outlined text-[24px] font-variation-settings-fill">smartphone</span>
-            <span className="text-[10px] font-medium">Celulares</span>
+            <span className="text-[10px] font-medium">iPhones</span>
           </Link>
           <Link to="/accessories" className="group flex flex-1 flex-col items-center justify-end gap-1 text-gray-400 dark:text-secondary-text">
             <span className="material-symbols-outlined text-[24px]">headphones</span>
