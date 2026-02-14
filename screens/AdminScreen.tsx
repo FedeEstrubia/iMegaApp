@@ -151,6 +151,18 @@ const AdminScreen: React.FC = () => {
   const totalPotentialSales = inventory.reduce((acc, p) => acc + p.price, 0);
   const totalPotentialGain = totalPotentialSales - totalCostInventory;
 
+  const markAsSold = async (product: Product) => {
+    try {
+      await updateInventoryItem({
+        ...product,
+        status: 'sold'
+      });
+    } catch (error) {
+      console.error('Error marcando como vendido:', error);
+    }
+  };
+
+
   return (
     <div className="flex flex-col h-screen overflow-hidden relative">
       {/* Header */}
