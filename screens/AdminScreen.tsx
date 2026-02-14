@@ -7,7 +7,10 @@ import { DeviceCondition, Product } from '../types';
 const COST_ADDITIONS = {
   courrier: 30,
   extras: 10,
-  battery: 30
+  battery: 30,
+  workFede: 40,
+  workFabri: 40,
+  workFeli: 40
 };
 
 const AdminScreen: React.FC = () => {
@@ -50,7 +53,10 @@ const AdminScreen: React.FC = () => {
   const totalCalculatedCost = baseCost +
     (additions.courrier ? COST_ADDITIONS.courrier : 0) +
     (additions.extras ? COST_ADDITIONS.extras : 0) +
-    (additions.battery ? COST_ADDITIONS.battery : 0);
+    (additions.battery ? COST_ADDITIONS.battery : 0) +
+    (additions.workFede ? COST_ADDITIONS.workFede : 0) +
+    (additions.workFabri ? COST_ADDITIONS.workFabri : 0) +
+    (additions.workFeli ? COST_ADDITIONS.workFeli : 0);
 
   const resetForm = () => {
     setForm({
@@ -310,7 +316,7 @@ const AdminScreen: React.FC = () => {
                       className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.battery ? 'bg-emerald-500/20 border-emerald-500 text-emerald-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
                     >
                       <span className="material-symbols-outlined text-[16px]">battery_charging_full</span>
-                      Batería ($70)
+                      Batería ($30)
                     </button>
                     <button
                       type="button"
@@ -319,6 +325,30 @@ const AdminScreen: React.FC = () => {
                     >
                       <span className="material-symbols-outlined text-[16px]">add_box</span>
                       Extras ($10)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleAddition('workFede')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFede ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">add_box</span>
+                      Work Fede ($40)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleAddition('workFabri')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFabri ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">add_box</span>
+                      Work Fabri ($40)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleAddition('workFeli')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFeli ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">add_box</span>
+                      Work Feli ($40)
                     </button>
                   </div>
                 </div>
