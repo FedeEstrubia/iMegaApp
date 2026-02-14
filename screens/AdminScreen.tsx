@@ -236,6 +236,13 @@ const AdminScreen: React.FC = () => {
               const isConfirming = confirmDeleteId === p.id;
               return (
                 <div key={p.id} className="relative flex flex-col p-4 bg-white dark:bg-surface-dark border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+                  {p.status === 'sold' && (
+                    <div className="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] px-2 py-1 rounded-full font-bold uppercase">
+                      Vendido
+                    </div>
+                  )}
+
+
                   {isConfirming && (
                     <div className="absolute inset-0 z-10 bg-red-600/95 flex flex-col items-center justify-center p-4 text-white">
                       <p className="text-sm font-bold mb-3">¿Eliminar este iPhone?</p>
