@@ -254,9 +254,31 @@ const AdminScreen: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => handleOpenEdit(p)} className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400"><span className="material-symbols-outlined">edit</span></button>
-                      <button onClick={() => setConfirmDeleteId(p.id)} className="p-2 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-500"><span className="material-symbols-outlined">delete</span></button>
+                      {p.status !== 'sold' && (
+                        <button
+                          onClick={() => markAsSold(p)}
+                          className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600"
+                          title="Marcar como vendido"
+                        >
+                          <span className="material-symbols-outlined">check_circle</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleOpenEdit(p)}
+                        className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400"
+                      >
+                        <span className="material-symbols-outlined">edit</span>
+                      </button>
+
+                      <button
+                        onClick={() => setConfirmDeleteId(p.id)}
+                        className="p-2 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-500"
+                      >
+                        <span className="material-symbols-outlined">delete</span>
+                      </button>
                     </div>
+
                   </div>
                   <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <div className="text-center"><p className="text-[8px] uppercase text-slate-400 font-black">Costo</p><p className="text-xs font-bold">${p.costPrice}</p></div>
