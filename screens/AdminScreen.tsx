@@ -1,20 +1,24 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../AppContext';
 import { DeviceCondition, Product } from '../types';
 
+const COST_ADDITIONS = {
+  courrier: 30,
+  extras: 10,
+  battery: 30
+};
+
 const AdminScreen: React.FC = () => {
   const navigate = useNavigate();
-  // Fix: isAdmin does not exist on AppContextType, use userRole to derive isAdmin state.
-  const { 
+  const {
     userRole, inventory, addInventoryItem, updateInventoryItem, deleteInventoryItem,
-    businessLiquidity, setBusinessLiquidity 
+    businessLiquidity, setBusinessLiquidity
   } = useAppContext();
-  
-  // Local variable to check if the user has the admin role.
+
   const isAdmin = userRole === 'admin';
-  
+
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [imageUrlInput, setImageUrlInput] = useState('');
@@ -22,6 +26,13 @@ const AdminScreen: React.FC = () => {
   const [liqInput, setLiqInput] = useState(businessLiquidity.toString());
 
   // Form State
+  const [baseCost, setBaseCost] = useState<number>(0);
+  const [additions, setAdditions] = useState({
+    courrier: false,
+    extras: false,
+    battery: false
+  });
+
   const [form, setForm] = useState<Partial<Product>>({
     name: '',
     storage: '128GB',
@@ -34,6 +45,12 @@ const AdminScreen: React.FC = () => {
     imageUrl: '',
     thumbnails: []
   });
+
+  // Calculate total cost whenever baseCost or additions change
+  const totalCalculatedCost = baseCost +
+    (additions.courrier ? COST_ADDITIONS.courrier : 0) +
+    (additions.extras ? COST_ADDITIONS.extras : 0) +
+    (additions.battery ? COST_ADDITIONS.battery : 0);
 
   const resetForm = () => {
     setForm({
@@ -48,6 +65,8 @@ const AdminScreen: React.FC = () => {
       imageUrl: '',
       thumbnails: []
     });
+    setBaseCost(0);
+    setAdditions({ courrier: false, extras: false, battery: false });
     setEditingId(null);
     setImageUrlInput('');
     setConfirmDeleteId(null);
@@ -55,6 +74,8 @@ const AdminScreen: React.FC = () => {
 
   const handleOpenEdit = (product: Product) => {
     setForm(product);
+    setBaseCost(product.costPrice); // Al editar, empezamos con el costo guardado como base
+    setAdditions({ courrier: false, extras: false, battery: false }); // Reset additions on edit
     setEditingId(product.id);
     setShowModal(true);
   };
@@ -78,22 +99,12 @@ const AdminScreen: React.FC = () => {
     setImageUrlInput('');
   };
 
-  const handleRemoveImage = (index: number, isMain: boolean) => {
-    if (isMain) {
-      const nextThumb = form.thumbnails?.[0];
-      const remainingThumbs = form.thumbnails?.slice(1) || [];
-      setForm({ ...form, imageUrl: nextThumb || '', thumbnails: remainingThumbs });
-    } else {
-      const newThumbs = form.thumbnails?.filter((_, i) => i !== index) || [];
-      setForm({ ...form, thumbnails: newThumbs });
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const productData: Product = {
       ...form as Product,
       id: editingId || `custom-${Date.now()}`,
+      costPrice: totalCalculatedCost, // Usamos el costo calculado
       thumbnails: form.thumbnails || [],
       specs: [
         { label: 'Salud Batería', value: form.batteryHealth || '100%', icon: 'battery_full' },
@@ -115,6 +126,10 @@ const AdminScreen: React.FC = () => {
     if (!isNaN(val)) setBusinessLiquidity(val);
   };
 
+  const toggleAddition = (key: keyof typeof additions) => {
+    setAdditions(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   if (!isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center h-screen p-6 text-center">
@@ -126,9 +141,9 @@ const AdminScreen: React.FC = () => {
     );
   }
 
-  const totalCost = inventory.reduce((acc, p) => acc + (p.costPrice || 0), 0);
+  const totalCostInventory = inventory.reduce((acc, p) => acc + (p.costPrice || 0), 0);
   const totalPotentialSales = inventory.reduce((acc, p) => acc + p.price, 0);
-  const totalPotentialGain = totalPotentialSales - totalCost;
+  const totalPotentialGain = totalPotentialSales - totalCostInventory;
 
   return (
     <div className="flex flex-col h-screen overflow-hidden relative">
@@ -146,56 +161,47 @@ const AdminScreen: React.FC = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto p-5 space-y-6 no-scrollbar pb-24">
-        
+
         {/* Gestión de Liquidez */}
         <div className="p-5 bg-surface-darker text-white rounded-3xl space-y-4">
-           <div className="flex justify-between items-center">
-              <div>
-                 <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Liquidez del Negocio</p>
-                 <p className="text-3xl font-black text-emerald-400">${businessLiquidity.toLocaleString()}</p>
-              </div>
-              <div className="bg-emerald-500/20 p-2 rounded-xl">
-                 <span className="material-symbols-outlined text-emerald-400">account_balance_wallet</span>
-              </div>
-           </div>
-           <div className="flex gap-2">
-              <input 
-                type="number" 
-                value={liqInput} 
-                onChange={e => setLiqInput(e.target.value)}
-                className="flex-1 bg-white/10 border-0 rounded-xl px-3 py-2 text-sm font-bold"
-              />
-              <button 
-                onClick={handleUpdateLiquidity}
-                className="bg-primary px-4 rounded-xl text-xs font-bold"
-              >
-                Ajustar
-              </button>
-           </div>
-           <p className="text-[10px] text-slate-500 italic">* Esta liquidez limita las operaciones de downgrade con efectivo.</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Liquidez del Negocio</p>
+              <p className="text-3xl font-black text-emerald-400">${businessLiquidity.toLocaleString()}</p>
+            </div>
+            <div className="bg-emerald-500/20 p-2 rounded-xl">
+              <span className="material-symbols-outlined text-emerald-400">account_balance_wallet</span>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              value={liqInput}
+              onChange={e => setLiqInput(e.target.value)}
+              className="flex-1 bg-white/10 border-0 rounded-xl px-3 py-2 text-sm font-bold"
+            />
+            <button
+              onClick={handleUpdateLiquidity}
+              className="bg-primary px-4 rounded-xl text-xs font-bold"
+            >
+              Ajustar
+            </button>
+          </div>
         </div>
 
         {/* Metricas */}
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2 p-4 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
-             <div className="bg-emerald-500 w-12 h-12 rounded-xl flex items-center justify-center text-white"><span className="material-symbols-outlined">trending_up</span></div>
-             <div>
-                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Ganancia Total Potencial</p>
-                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">${totalPotentialGain.toLocaleString()}</p>
-             </div>
-          </div>
-          <div className="p-3 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-             <p className="text-[9px] text-slate-500 uppercase font-bold mb-1">Inversión Stock</p>
-             <p className="text-lg font-bold text-orange-500">${totalCost.toLocaleString()}</p>
-          </div>
-          <div className="p-3 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-             <p className="text-[9px] text-slate-500 uppercase font-bold mb-1">Dispositivos</p>
-             <p className="text-lg font-bold text-blue-500">{inventory.length}</p>
+            <div className="bg-emerald-500 w-12 h-12 rounded-xl flex items-center justify-center text-white"><span className="material-symbols-outlined">trending_up</span></div>
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Ganancia Total Potencial</p>
+              <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">${totalPotentialGain.toLocaleString()}</p>
+            </div>
           </div>
         </div>
 
         {/* Acciones Rápidas */}
-        <button 
+        <button
           onClick={() => { resetForm(); setShowModal(true); }}
           className="w-full flex items-center justify-center gap-3 p-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-all"
         >
@@ -203,48 +209,41 @@ const AdminScreen: React.FC = () => {
           <span>Añadir Nuevo iPhone</span>
         </button>
 
-        {/* Inventario Detallado */}
+        {/* Inventario */}
         <div className="space-y-4">
-          <h3 className="text-xs font-black uppercase text-slate-400 pl-1 tracking-widest">Inventario en Tiempo Real</h3>
+          <h3 className="text-xs font-black uppercase text-slate-400 pl-1 tracking-widest">Inventario</h3>
           <div className="space-y-3">
-            {inventory.length === 0 ? (
-              <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800"><p className="text-slate-400 text-sm font-medium">No hay productos en el inventario</p></div>
-            ) : inventory.map(p => {
+            {inventory.map(p => {
               const gain = p.price - (p.costPrice || 0);
               const isConfirming = confirmDeleteId === p.id;
               return (
-                <div key={p.id} className="relative flex flex-col p-4 bg-white dark:bg-surface-dark border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm hover:border-primary/50 transition-colors overflow-hidden">
+                <div key={p.id} className="relative flex flex-col p-4 bg-white dark:bg-surface-dark border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
                   {isConfirming && (
-                    <div className="absolute inset-0 z-10 bg-red-600/95 dark:bg-red-900/95 flex flex-col items-center justify-center p-4 text-white animate-in fade-in duration-200">
+                    <div className="absolute inset-0 z-10 bg-red-600/95 flex flex-col items-center justify-center p-4 text-white">
                       <p className="text-sm font-bold mb-3">¿Eliminar este iPhone?</p>
                       <div className="flex gap-4 w-full">
-                        <button onClick={() => setConfirmDeleteId(null)} className="flex-1 py-2 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-xs">Cancelar</button>
+                        <button onClick={() => setConfirmDeleteId(null)} className="flex-1 py-2 rounded-lg bg-white/20 font-bold text-xs">Cancelar</button>
                         <button onClick={() => execDelete(p.id)} className="flex-1 py-2 rounded-lg bg-white text-red-600 font-bold text-xs">Confirmar</button>
                       </div>
                     </div>
                   )}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 bg-slate-50 dark:bg-slate-900 rounded-xl flex items-center justify-center p-2 relative">
-                        <img src={p.imageUrl || 'https://via.placeholder.com/150?text=iPhone'} alt={p.name} className="max-w-full max-h-full object-contain" />
-                      </div>
+                      <img src={p.imageUrl} className="w-12 h-12 object-contain rounded-lg" />
                       <div>
                         <p className="text-sm font-black">{p.name}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                           <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-500 font-bold">{p.storage}</span>
-                           <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-500 font-bold">{p.batteryHealth}</span>
-                        </div>
+                        <p className="text-[10px] text-slate-400">{p.storage}</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => handleOpenEdit(p)} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary transition-colors"><span className="material-symbols-outlined text-[20px]">edit</span></button>
-                      <button onClick={() => setConfirmDeleteId(p.id)} className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors"><span className="material-symbols-outlined text-[20px]">delete</span></button>
+                      <button onClick={() => handleOpenEdit(p)} className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400"><span className="material-symbols-outlined">edit</span></button>
+                      <button onClick={() => setConfirmDeleteId(p.id)} className="p-2 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-500"><span className="material-symbols-outlined">delete</span></button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl text-center"><p className="text-[8px] uppercase text-slate-400 font-black mb-1">Costo</p><p className="text-sm font-bold text-slate-600 dark:text-slate-300">${p.costPrice}</p></div>
-                    <div className="bg-primary/5 p-2 rounded-xl text-center"><p className="text-[8px] uppercase text-primary font-black mb-1">P. Venta</p><p className="text-sm font-bold text-primary">${p.price}</p></div>
-                    <div className="bg-emerald-50 dark:bg-emerald-900/10 p-2 rounded-xl text-center"><p className="text-[8px] uppercase text-emerald-500 font-black mb-1">Ganancia</p><p className="text-sm font-black text-emerald-600 dark:text-emerald-400">+${gain}</p></div>
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <div className="text-center"><p className="text-[8px] uppercase text-slate-400 font-black">Costo</p><p className="text-xs font-bold">${p.costPrice}</p></div>
+                    <div className="text-center"><p className="text-[8px] uppercase text-primary font-black">Venta</p><p className="text-xs font-bold">${p.price}</p></div>
+                    <div className="text-center"><p className="text-[8px] uppercase text-emerald-500 font-black">Ganancia</p><p className="text-xs font-black text-emerald-400">+${gain}</p></div>
                   </div>
                 </div>
               );
@@ -253,39 +252,92 @@ const AdminScreen: React.FC = () => {
         </div>
       </div>
 
+      {/* Modal Edición / Creación */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center animate-in fade-in duration-200">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setShowModal(false)}></div>
-          <div className="relative w-full max-w-md bg-background-light dark:bg-surface-dark rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[90vh]">
+          <div className="relative w-full max-w-md bg-background-light dark:bg-surface-dark rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-surface-dark">
               <h2 className="text-xl font-bold">{editingId ? 'Editar iPhone' : 'Nuevo iPhone'}</h2>
               <button onClick={() => setShowModal(false)} className="text-slate-400"><span className="material-symbols-outlined">close</span></button>
             </div>
+
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5 no-scrollbar pb-10">
+              {/* Fotos */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gestión de Fotos</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">URL de Imagen</label>
                 <div className="flex gap-2">
-                  <input type="text" value={imageUrlInput} onChange={e => setImageUrlInput(e.target.value)} placeholder="Pegar URL de imagen..." className="flex-1 bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm" />
+                  <input type="text" value={imageUrlInput} onChange={e => setImageUrlInput(e.target.value)} placeholder="https://..." className="flex-1 bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm" />
                   <button type="button" onClick={handleAddImageUrl} className="bg-primary text-white w-12 rounded-xl flex items-center justify-center"><span className="material-symbols-outlined">add</span></button>
                 </div>
               </div>
-              <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombre del Modelo</label><input required type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Ej: iPhone 15 Pro Max" className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-bold" /></div>
+
+              {/* Datos Básicos */}
+              <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombre</label><input required type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-bold" /></div>
+
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Almacenamiento</label><select value={form.storage} onChange={e => setForm({...form, storage: e.target.value})} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-medium"><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option></select></div>
-                <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Salud Batería</label><input required type="text" value={form.batteryHealth} onChange={e => setForm({...form, batteryHealth: e.target.value})} placeholder="Ej: 100%" className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-medium" /></div>
+                <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Almacenamiento</label><select value={form.storage} onChange={e => setForm({ ...form, storage: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option></select></div>
+                <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Batería</label><input required type="text" value={form.batteryHealth} onChange={e => setForm({ ...form, batteryHealth: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm" /></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Color</label><input required type="text" value={form.color} onChange={e => setForm({...form, color: e.target.value})} placeholder="Ej: Titanio" className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-medium" /></div>
-                <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</label><select value={form.condition} onChange={e => setForm({...form, condition: e.target.value as DeviceCondition})} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-medium">{Object.values(DeviceCondition).map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+
+              {/* SECCIÓN DE COSTOS DINÁMICOS */}
+              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Costo Base ($)</label>
+                  <input
+                    required
+                    type="number"
+                    value={baseCost}
+                    onChange={e => setBaseCost(parseInt(e.target.value) || 0)}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border-0 rounded-xl p-3 text-lg font-black text-orange-600"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Adicionales</label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleAddition('courrier')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.courrier ? 'bg-primary/20 border-primary text-primary' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">local_shipping</span>
+                      Courrier ($30)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleAddition('battery')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.battery ? 'bg-emerald-500/20 border-emerald-500 text-emerald-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">battery_charging_full</span>
+                      Batería ($30)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleAddition('extras')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.extras ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">add_box</span>
+                      Extras ($10)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <span className="text-[10px] font-black uppercase text-slate-400">Costo Final Calculado</span>
+                  <span className="text-xl font-black text-orange-600">${totalCalculatedCost}</span>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1"><label className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Precio Costo ($)</label><input required type="number" value={form.costPrice} onChange={e => setForm({...form, costPrice: parseInt(e.target.value)})} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-black text-orange-600" /></div>
-                <div className="space-y-1"><label className="text-[10px] font-black text-primary uppercase tracking-widest">Precio Venta ($)</label><input required type="number" value={form.price} onChange={e => setForm({...form, price: parseInt(e.target.value)})} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-black text-primary" /></div>
+
+              {/* Precio de Venta */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest">Precio Venta ($)</label>
+                <input required type="number" value={form.price} onChange={e => setForm({ ...form, price: parseInt(e.target.value) || 0 })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-xl font-black text-primary" />
               </div>
-              <div className="sticky bottom-0 bg-background-light dark:bg-surface-dark pt-4 flex gap-3">
-                {editingId && <button type="button" onClick={() => setConfirmDeleteId(editingId)} className="flex-1 bg-red-500/10 text-red-500 py-4 rounded-2xl font-bold active:scale-95 transition-transform border border-red-500/20">Eliminar</button>}
-                <button type="submit" className="flex-[2] bg-primary text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform">{editingId ? 'Guardar Cambios' : 'Publicar iPhone'}</button>
-              </div>
+
+              <button type="submit" className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+                {editingId ? 'Guardar Cambios' : 'Publicar iPhone'}
+              </button>
             </form>
           </div>
         </div>
