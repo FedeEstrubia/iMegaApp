@@ -310,7 +310,7 @@ const AdminScreen: React.FC = () => {
                       className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.battery ? 'bg-emerald-500/20 border-emerald-500 text-emerald-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
                     >
                       <span className="material-symbols-outlined text-[16px]">battery_charging_full</span>
-                      Batería ($30)
+                      Batería ($70)
                     </button>
                     <button
                       type="button"
