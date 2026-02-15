@@ -11,6 +11,8 @@ import SavedScreen from './screens/SavedScreen';
 import AdminScreen from './screens/AdminScreen';
 import AccessoriesScreen from './screens/AccessoriesScreen';
 import { AppProvider } from './AppContext';
+import AdminPartnersScreen from './screens/AdminPartnersScreen';
+
 
 const App: React.FC = () => {
   return (
@@ -28,6 +30,7 @@ const App: React.FC = () => {
             <Route path="/membership" element={<MembershipScreen />} />
             <Route path="/admin" element={<AdminScreen />} />
             <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/admin/partners" element={<AdminPartnersScreen />} />
           </Routes>
         </div>
       </HashRouter>
