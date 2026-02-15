@@ -17,11 +17,26 @@ const COST_ADDITIONS = {
 const AdminScreen: React.FC = () => {
   const navigate = useNavigate();
   const {
-    userRole, inventory, addInventoryItem, updateInventoryItem, deleteInventoryItem,
-    businessLiquidity, setBusinessLiquidity
+    userRole,
+    inventory,
+    cases,
+    accessories,
+    addInventoryItem,
+    updateInventoryItem,
+    deleteInventoryItem,
+    businessLiquidity,
+    setBusinessLiquidity
   } = useAppContext();
 
+
   const isAdmin = userRole === 'admin';
+
+  const allProducts = [
+    ...inventory,
+    ...cases,
+    ...accessories
+  ];
+
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -357,7 +372,7 @@ const AdminScreen: React.FC = () => {
         <div className="space-y-4">
           <h3 className="text-xs font-black uppercase text-slate-400 pl-1 tracking-widest">Inventario</h3>
           <div className="space-y-3">
-            {inventory.filter(p => p.status !== 'sold').map(p => {
+            {allProducts.filter(p => p.status !== 'sold' || !p.status).map(p => {
               const gain = p.price - (p.costPrice || 0);
               const isConfirming = confirmDeleteId === p.id;
               return (
