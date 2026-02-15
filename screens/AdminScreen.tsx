@@ -306,6 +306,9 @@ const AdminScreen: React.FC = () => {
 
   };
 
+  const isPhone = activeCategory === 'phones';
+  const isCase = activeCategory === 'cases';
+  const isAccessory = activeCategory === 'accessories';
 
 
   return (
@@ -540,11 +543,11 @@ const AdminScreen: React.FC = () => {
 
               {/* Datos Básicos */}
               <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombre</label><input required type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-bold" /></div>
-
-              <div className="grid grid-cols-2 gap-4">
+              {isPhone && (<> <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Almacenamiento</label><select value={form.storage} onChange={e => setForm({ ...form, storage: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option></select></div>
                 <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Batería</label><input required type="text" value={form.batteryHealth} onChange={e => setForm({ ...form, batteryHealth: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm" /></div>
-              </div>
+              </div> </>)}
+
 
               {/* SECCIÓN DE COSTOS DINÁMICOS */}
               <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
