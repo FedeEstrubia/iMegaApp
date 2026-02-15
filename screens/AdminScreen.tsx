@@ -595,6 +595,7 @@ const AdminScreen: React.FC = () => {
                       storage: ""
                     })
                   }
+                  className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
                 >
                   <option value="">Seleccionar modelo</option>
 
@@ -613,6 +614,7 @@ const AdminScreen: React.FC = () => {
                     <select
                       value={form.storage || ""}
                       onChange={e => setForm({ ...form, storage: e.target.value })}
+                      className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
                     >
                       <option value="">Seleccionar almacenamiento</option>
 
