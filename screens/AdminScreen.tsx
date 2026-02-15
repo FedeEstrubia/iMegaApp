@@ -368,7 +368,12 @@ const AdminScreen: React.FC = () => {
           className="w-full flex items-center justify-center gap-3 p-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-all"
         >
           <span className="material-symbols-outlined">add_circle</span>
-          <span>Añadir Nuevo iPhone</span>
+          <span>
+            {activeCategory === 'phones' && 'Añadir Nuevo iPhone'}
+            {activeCategory === 'cases' && 'Añadir Nueva Funda'}
+            {activeCategory === 'accessories' && 'Añadir Nuevo Accesorio'}
+          </span>
+
         </button>
         <button
           onClick={() => navigate('/admin/partners')}
