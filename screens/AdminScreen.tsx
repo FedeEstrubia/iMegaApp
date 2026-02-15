@@ -788,6 +788,18 @@ const AdminScreen: React.FC = () => {
                         </option>
                       ))}
                     </select>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Costo Base ($)</label>
+                      <input
+                        required
+                        type="number"
+                        value={baseCost}
+                        onChange={e => setBaseCost(parseInt(e.target.value) || 0)}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border-0 rounded-xl p-3 text-lg font-black text-orange-600"
+                      />
+                    </div>
+
                   </div>
                 </>
               )}
