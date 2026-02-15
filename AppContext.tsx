@@ -112,7 +112,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    await fetchInventory(); // 🔥 importante
+    await fetchCases(); // 🔥 importante
   };
 
 
@@ -134,7 +134,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    await fetchInventory(); // importante para refrescar estado
+    await fetchAccesories(); // importante para refrescar estado
   };
 
 
