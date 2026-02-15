@@ -211,10 +211,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : null;
   });
 
-  const [businessLiquidity, setBusinessLiquidity] = useState(() => {
-    const saved = localStorage.getItem('businessLiquidity');
-    return saved ? parseFloat(saved) : 2500;
-  });
+  const [businessLiquidity, setBusinessLiquidity] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchLiquidity = async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'liquidity')
+        .single();
+
+      if (!error && data) {
+        setBusinessLiquidity(Number(data.value));
+      }
+    };
+
+    fetchLiquidity();
+  }, []);
+
 
   const [useTradeIn, setUseTradeIn] = useState(false);
 
@@ -323,6 +337,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // 3. Update User Points
     // Calculate points: 1 point per $10 spent (example logic)
     const totalSpent = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    // 3.1 Sumar venta a liquidez del negocio
+    const newLiquidity = businessLiquidity + totalSpent;
+
+    await supabase
+      .from('settings')
+      .update({ value: newLiquidity })
+      .eq('key', 'liquidity');
+
+    setBusinessLiquidity(newLiquidity);
+
     const newPoints = Math.floor(totalSpent / 10);
 
     const { error: pointsError } = await supabase.rpc('increment_points', { user_id: user.id, amount: newPoints });
