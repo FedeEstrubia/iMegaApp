@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../AppContext';
 import { DeviceCondition, Product } from '../types';
+import { supabase } from '../services/supabase';
 
 const COST_ADDITIONS = {
   courrier: 30,
@@ -152,15 +153,58 @@ const AdminScreen: React.FC = () => {
   const totalPotentialGain = totalPotentialSales - totalCostInventory;
 
   const markAsSold = async (product: Product) => {
+    const confirmSale = window.confirm(
+      `¿Confirmar venta de ${product.name}?\n\nEsto generará movimientos financieros.`
+    );
+
+    if (!confirmSale) return;
+
     try {
+      const profit = product.price - (product.costPrice || 0);
+
+      if (profit <= 0) {
+        alert("No hay ganancia para distribuir.");
+        return;
+      }
+
+      // Traer socios activos
+      const { data: partners, error: partnersError } = await supabase
+        .from('partners')
+        .select('*')
+        .eq('active', true);
+
+      if (partnersError || !partners) {
+        console.error(partnersError);
+        return;
+      }
+
+      // Insertar movimientos por socio
+      for (const partner of partners) {
+        if (partner.role !== 'partner') continue;
+
+        const partnerShare = (profit * partner.profit_percent) / 100;
+
+        await supabase.from('partner_ledger').insert({
+          partner_id: partner.id,
+          type: 'profit',
+          amount_usd: partnerShare,
+          note: `Venta ${product.name}`
+        });
+      }
+
+      // Actualizar producto a sold
       await updateInventoryItem({
         ...product,
         status: 'sold'
       });
+
+      alert("Venta registrada correctamente.");
+
     } catch (error) {
-      console.error('Error marcando como vendido:', error);
+      console.error("Error finalizando venta:", error);
     }
   };
+
 
 
   return (
