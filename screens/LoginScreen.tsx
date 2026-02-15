@@ -7,9 +7,11 @@ import { supabase } from '../services/supabase';
 const LoginScreen: React.FC = () => {
   const navigate = useNavigate();
   const { session } = useAppContext();
-  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
 
   useEffect(() => {
     if (session) {
@@ -31,28 +33,28 @@ const LoginScreen: React.FC = () => {
     setMessage(null);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: window.location.origin,
-        },
+      const { error } = await supabase.auth.signInWithPassword({
+        email: `${username}@imega.local`,
+        password: password,
       });
 
       if (error) throw error;
 
       setMessage({
-        text: '¡Enlace mágico enviado! Revisa tu correo electrónico para iniciar sesión.',
+        text: 'Sesión iniciada correctamente.',
         type: 'success'
       });
+
     } catch (error: any) {
       setMessage({
-        text: error.message || 'Ocurrió un error al enviar el enlace.',
+        text: error.message || 'Credenciales incorrectas.',
         type: 'error'
       });
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="relative flex h-full min-h-screen w-full max-w-[430px] flex-col bg-background-light dark:bg-background-dark overflow-hidden shadow-2xl mx-auto">
@@ -102,15 +104,21 @@ const LoginScreen: React.FC = () => {
                   <span className="material-symbols-outlined text-[#637588] dark:text-[#93adc8]">mail</span>
                 </div>
                 <input
-                  className="block w-full rounded-xl border-0 py-4 pl-12 pr-4 text-[#111418] dark:text-white bg-white dark:bg-[#1a2632] ring-1 ring-inset ring-gray-300 dark:ring-[#324d67] placeholder:text-[#9ca3af] dark:placeholder:text-[#637588] focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base sm:leading-6 transition-all shadow-sm"
-                  id="email"
-                  placeholder="nombre@ejemplo.com"
-                  type="email"
-                  required
-                  value={email}
-                  disabled={loading}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  placeholder="Usuario"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="..."
                 />
+
+                <input
+                  type="password"
+                  placeholder="Contraseña"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="..."
+                />
+
               </div>
             </div>
 
