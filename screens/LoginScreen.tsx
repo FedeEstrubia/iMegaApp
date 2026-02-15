@@ -103,7 +103,7 @@ const LoginScreen: React.FC = () => {
                   placeholder="Usuario"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full rounded-xl border-0 py-4 pl-12 pr-4 text-[#111418] dark:text-white bg-white dark:bg-[#1a2632] ring-1 ring-inset ring-gray-300 dark:ring-[#324d67] placeholder:text-[#9ca3af] dark:placeholder:text-[#637588] focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base sm:leading-6 transition-all shadow-sm"
+                  className="block w-full rounded-xl border-0 my-4 py-4 pl-12 pr-4 text-[#111418] dark:text-white bg-white dark:bg-[#1a2632] ring-1 ring-inset ring-gray-300 dark:ring-[#324d67] placeholder:text-[#9ca3af] dark:placeholder:text-[#637588] focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base sm:leading-6 transition-all shadow-sm"
                 />
 
                 <input
@@ -111,7 +111,7 @@ const LoginScreen: React.FC = () => {
                   placeholder="Contraseña"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full rounded-xl border-0 py-4 pl-12 pr-4 text-[#111418] dark:text-white bg-white dark:bg-[#1a2632] ring-1 ring-inset ring-gray-300 dark:ring-[#324d67] placeholder:text-[#9ca3af] dark:placeholder:text-[#637588] focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base sm:leading-6 transition-all shadow-sm"
+                  className="block w-full rounded-xl border-0 my-4 py-4 pl-12 pr-4 text-[#111418] dark:text-white bg-white dark:bg-[#1a2632] ring-1 ring-inset ring-gray-300 dark:ring-[#324d67] placeholder:text-[#9ca3af] dark:placeholder:text-[#637588] focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base sm:leading-6 transition-all shadow-sm"
                 />
 
               </div>
