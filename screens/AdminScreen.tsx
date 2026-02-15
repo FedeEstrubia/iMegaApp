@@ -72,10 +72,17 @@ const AdminScreen: React.FC = () => {
     cases,
     accessories,
     addInventoryItem,
+    addCaseItem,
+    addAccessoryItem,
     updateInventoryItem,
     deleteInventoryItem,
     businessLiquidity,
-    setBusinessLiquidity
+    setBusinessLiquidity,
+    updateCaseItem,
+    updateAccessoryItem,
+    deleteCaseItem,
+    deleteAccessoryItem,
+
   } = useAppContext();
 
 
@@ -162,14 +169,23 @@ const AdminScreen: React.FC = () => {
     setShowModal(true);
   };
 
-  const execDelete = (id: string) => {
-    deleteInventoryItem(id);
+  const execDelete = async (id: string) => {
+    if (activeCategory === 'phones') {
+      await deleteInventoryItem(id);
+    } else if (activeCategory === 'cases') {
+      await deleteCaseItem(id);
+    } else {
+      await deleteAccessoryItem(id);
+    }
+
     setConfirmDeleteId(null);
+
     if (editingId === id) {
       setShowModal(false);
       resetForm();
     }
   };
+
 
   const handleAddImageUrl = () => {
     if (!imageUrlInput.trim()) return;
@@ -183,10 +199,11 @@ const AdminScreen: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const productData: Product = {
       ...form as Product,
-      id: editingId || `custom-${Date.now()}`,
-      costPrice: totalCalculatedCost, // Usamos el costo calculado
+
+      costPrice: totalCalculatedCost,
       thumbnails: form.thumbnails || [],
       specs: [
         { label: 'Salud Batería', value: form.batteryHealth || '100%', icon: 'battery_full' },
@@ -194,55 +211,31 @@ const AdminScreen: React.FC = () => {
         { label: 'Color', value: form.color || 'N/A', icon: 'palette' },
       ]
     };
+
     if (editingId) {
-      await updateInventoryItem(productData);
-    } else {
-      await addInventoryItem(productData, activeCategory);
-
-
-      // BONUS AUTOMATICO POR REACONDICIONAMIENTO
-
-      const bonusAmount = 40;
-
-      // IDs reales de Supabase (pegá los tuyos acá)
-      const FEDE_ID = '4a72b93a-fd19-4168-9719-f53cde92f588';
-      const FABRI_ID = '3b725091-ba25-45b2-a12d-6ae0e8a00989';
-      const FELI_ID = 'd89e21b3-874c-448a-b093-f420b377e624';
-
-      if (additions.workFede) {
-        await supabase.from('partner_ledger').insert({
-          partner_id: FEDE_ID,
-          type: 'bonus',
-          amount_usd: bonusAmount,
-          note: `Reacondicionamiento ${productData.name}`
-        });
-      }
-
-      if (additions.workFabri) {
-        await supabase.from('partner_ledger').insert({
-          partner_id: FABRI_ID,
-          type: 'bonus',
-          amount_usd: bonusAmount,
-          note: `Reacondicionamiento ${productData.name}`
-        });
-      }
-
-      if (additions.workFeli) {
-        await supabase.from('partner_ledger').insert({
-          partner_id: FELI_ID,
-          type: 'bonus',
-          amount_usd: bonusAmount,
-          note: `Reacondicionamiento ${productData.name}`
-        });
+      if (activeCategory === 'phones') {
+        await updateInventoryItem(editingId, productData);
+      } else if (activeCategory === 'cases') {
+        await updateCaseItem(editingId, productData);
+      } else {
+        await updateAccessoryItem(editingId, productData);
       }
     }
-
-
-
+    else {
+      // 🟢 MODO CREACIÓN
+      if (activeCategory === 'phones') {
+        await addInventoryItem(productData);
+      } else if (activeCategory === 'cases') {
+        await addCaseItem(productData);
+      } else {
+        await addAccessoryItem(productData);
+      }
+    }
 
     setShowModal(false);
     resetForm();
   };
+
 
   const handleUpdateLiquidity = async () => {
     const val = parseFloat(liqInput);
@@ -582,7 +575,15 @@ const AdminScreen: React.FC = () => {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setShowModal(false)}></div>
           <div className="relative w-full max-w-md bg-background-light dark:bg-surface-dark rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-surface-dark">
-              <h2 className="text-xl font-bold">{editingId ? 'Editar iPhone' : 'Nuevo iPhone'}</h2>
+              <h2 className="text-xl font-bold">{editingId
+                ? 'Guardar Cambios'
+                : activeCategory === 'phones'
+                  ? 'Publicar iPhone'
+                  : activeCategory === 'cases'
+                    ? 'Publicar Funda'
+                    : 'Publicar Accesorio'
+              }
+              </h2>
               <button onClick={() => setShowModal(false)} className="text-slate-400"><span className="material-symbols-outlined">close</span></button>
             </div>
 
