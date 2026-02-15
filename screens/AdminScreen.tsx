@@ -546,81 +546,81 @@ const AdminScreen: React.FC = () => {
               {isPhone && (<> <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Almacenamiento</label><select value={form.storage} onChange={e => setForm({ ...form, storage: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option></select></div>
                 <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Batería</label><input required type="text" value={form.batteryHealth} onChange={e => setForm({ ...form, batteryHealth: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm" /></div>
-              </div> </>)}
-
-
-              {/* SECCIÓN DE COSTOS DINÁMICOS */}
-              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Costo Base ($)</label>
-                  <input
-                    required
-                    type="number"
-                    value={baseCost}
-                    onChange={e => setBaseCost(parseInt(e.target.value) || 0)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border-0 rounded-xl p-3 text-lg font-black text-orange-600"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Adicionales</label>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => toggleAddition('courrier')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.courrier ? 'bg-primary/20 border-primary text-primary' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">local_shipping</span>
-                      Courrier ($30)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleAddition('battery')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.battery ? 'bg-emerald-500/20 border-emerald-500 text-emerald-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">battery_charging_full</span>
-                      Batería ($30)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleAddition('extras')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.extras ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">add_box</span>
-                      Extras ($10)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleAddition('workFede')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFede ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">add_box</span>
-                      Work Fede ($40)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleAddition('workFabri')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFabri ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">add_box</span>
-                      Work Fabri ($40)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleAddition('workFeli')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFeli ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">add_box</span>
-                      Work Feli ($40)
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <span className="text-[10px] font-black uppercase text-slate-400">Costo Final Calculado</span>
-                  <span className="text-xl font-black text-orange-600">${totalCalculatedCost}</span>
-                </div>
               </div>
+
+
+                {/* SECCIÓN DE COSTOS DINÁMICOS */}
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Costo Base ($)</label>
+                    <input
+                      required
+                      type="number"
+                      value={baseCost}
+                      onChange={e => setBaseCost(parseInt(e.target.value) || 0)}
+                      className="w-full bg-slate-50 dark:bg-slate-800 border-0 rounded-xl p-3 text-lg font-black text-orange-600"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Adicionales</label>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleAddition('courrier')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.courrier ? 'bg-primary/20 border-primary text-primary' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                      >
+                        <span className="material-symbols-outlined text-[16px]">local_shipping</span>
+                        Courrier ($30)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleAddition('battery')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.battery ? 'bg-emerald-500/20 border-emerald-500 text-emerald-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                      >
+                        <span className="material-symbols-outlined text-[16px]">battery_charging_full</span>
+                        Batería ($30)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleAddition('extras')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.extras ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                      >
+                        <span className="material-symbols-outlined text-[16px]">add_box</span>
+                        Extras ($10)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleAddition('workFede')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFede ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                      >
+                        <span className="material-symbols-outlined text-[16px]">add_box</span>
+                        Work Fede ($40)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleAddition('workFabri')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFabri ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                      >
+                        <span className="material-symbols-outlined text-[16px]">add_box</span>
+                        Work Fabri ($40)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleAddition('workFeli')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFeli ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                      >
+                        <span className="material-symbols-outlined text-[16px]">add_box</span>
+                        Work Feli ($40)
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] font-black uppercase text-slate-400">Costo Final Calculado</span>
+                    <span className="text-xl font-black text-orange-600">${totalCalculatedCost}</span>
+                  </div>
+                </div> </>)}
 
               {/* Precio de Venta */}
               <div className="space-y-1">
