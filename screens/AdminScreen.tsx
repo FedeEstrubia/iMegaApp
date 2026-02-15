@@ -611,10 +611,8 @@ const AdminScreen: React.FC = () => {
                   <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Almacenamiento</label>
 
                     <select
-                      value={form.storage}
-                      onChange={(e) => setForm({ ...form, storage: e.target.value })}
-                      disabled={!form.name}
-                      className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
+                      value={form.storage || ""}
+                      onChange={e => setForm({ ...form, storage: e.target.value })}
                     >
                       <option value="">Seleccionar almacenamiento</option>
 
@@ -623,9 +621,9 @@ const AdminScreen: React.FC = () => {
                           <option key={storage} value={storage}>
                             {storage}
                           </option>
-                        ))
-                      }
+                        ))}
                     </select>
+
 
 
                   </div>
