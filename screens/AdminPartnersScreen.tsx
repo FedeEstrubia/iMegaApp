@@ -65,6 +65,24 @@ const AdminPartnersScreen: React.FC = () => {
             .filter(l => l.partner_id === partnerId)
             .reduce((acc, curr) => acc + Number(curr.amount_usd), 0);
     };
+    const getSummary = (partnerId: string) => {
+        const entries = ledger.filter(l => l.partner_id === partnerId);
+
+        const profit = entries
+            .filter(e => e.type === 'profit')
+            .reduce((acc, curr) => acc + Number(curr.amount_usd), 0);
+
+        const bonus = entries
+            .filter(e => e.type === 'bonus')
+            .reduce((acc, curr) => acc + Number(curr.amount_usd), 0);
+
+        const debt = entries
+            .filter(e => e.type === 'debt')
+            .reduce((acc, curr) => acc + Number(curr.amount_usd), 0);
+
+        return { profit, bonus, debt };
+    };
+
 
     return (
         <div className="p-6 space-y-8">
@@ -73,29 +91,58 @@ const AdminPartnersScreen: React.FC = () => {
             <div className="grid gap-6">
                 {partners.map(p => {
                     const balance = getBalance(p.id);
+                    const summary = getSummary(p.id);
+
 
                     return (
                         <div
                             key={p.id}
                             className="p-6 rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-800"
                         >
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <p className="text-lg font-bold">{p.name}</p>
-                                    <p className="text-xs text-slate-400">
-                                        {p.role === 'partner'
-                                            ? `${p.profit_percent}% participación`
-                                            : 'Empleado'}
-                                    </p>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p className="text-lg font-bold">{p.name}</p>
+                                        <p className="text-xs text-slate-400">
+                                            {p.role === 'partner'
+                                                ? `${p.profit_percent}% participación`
+                                                : 'Empleado'}
+                                        </p>
+                                    </div>
+
+                                    <div className="text-right">
+                                        <p className="text-xs uppercase text-slate-400">Balance</p>
+                                        <p className={`text-xl font-black ${balance >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                            ${balance.toLocaleString()}
+                                        </p>
+                                    </div>
                                 </div>
 
-                                <div className="text-right">
-                                    <p className="text-xs uppercase text-slate-400">Balance</p>
-                                    <p className={`text-xl font-black ${balance >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                        ${balance.toLocaleString()}
-                                    </p>
+                                {/* RESUMEN NUEVO */}
+                                <div className="grid grid-cols-3 gap-4 text-center text-xs">
+                                    <div>
+                                        <p className="text-slate-400 uppercase">Profit</p>
+                                        <p className="font-bold text-emerald-500">
+                                            ${summary.profit.toLocaleString()}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-slate-400 uppercase">Bonus</p>
+                                        <p className="font-bold text-blue-500">
+                                            ${summary.bonus.toLocaleString()}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-slate-400 uppercase">Deuda</p>
+                                        <p className="font-bold text-red-500">
+                                            ${summary.debt.toLocaleString()}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
+
                         </div>
                     );
                 })}
