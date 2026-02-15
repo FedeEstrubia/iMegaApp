@@ -30,6 +30,22 @@ const IPHONE_MODELS = [
   'iPhone 15 Pro',
   'iPhone 15 Pro Max',
 ];
+const IPHONE_CONFIG: Record<string, string[]> = {
+  "iPhone 15": ["128GB", "256GB", "512GB"],
+  "iPhone 15 Plus": ["128GB", "256GB", "512GB"],
+  "iPhone 15 Pro": ["128GB", "256GB", "512GB", "1TB"],
+  "iPhone 15 Pro Max": ["256GB", "512GB", "1TB"],
+
+  "iPhone 14": ["128GB", "256GB", "512GB"],
+  "iPhone 14 Plus": ["128GB", "256GB", "512GB"],
+  "iPhone 14 Pro": ["128GB", "256GB", "512GB", "1TB"],
+  "iPhone 14 Pro Max": ["128GB", "256GB", "512GB", "1TB"],
+
+  "iPhone 13": ["128GB", "256GB", "512GB"],
+  "iPhone 13 Pro": ["128GB", "256GB", "512GB", "1TB"],
+  "iPhone 13 Pro Max": ["128GB", "256GB", "512GB", "1TB"],
+};
+
 
 const AdminScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -571,16 +587,17 @@ const AdminScreen: React.FC = () => {
 
                 <select
                   value={form.name}
-                  onChange={e => setForm({ ...form, name: e.target.value })}
-                  className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-bold"
+                  onChange={(e) => setForm({ ...form, name: e.target.value, storage: "" })}
+                  className="input-style"
                 >
                   <option value="">Seleccionar modelo</option>
-                  {IPHONE_MODELS.map(model => (
+                  {Object.keys(IPHONE_CONFIG).map(model => (
                     <option key={model} value={model}>
                       {model}
                     </option>
                   ))}
                 </select>
+
               </div>
               {isPhone && (<> <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Almacenamiento</label><select value={form.storage} onChange={e => setForm({ ...form, storage: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option></select></div>
