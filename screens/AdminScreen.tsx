@@ -168,10 +168,23 @@ const AdminScreen: React.FC = () => {
     resetForm();
   };
 
-  const handleUpdateLiquidity = () => {
+  const handleUpdateLiquidity = async () => {
     const val = parseFloat(liqInput);
-    if (!isNaN(val)) setBusinessLiquidity(val);
+    if (isNaN(val)) return;
+
+    const { error } = await supabase
+      .from('settings')
+      .update({ value: val })
+      .eq('key', 'liquidity');
+
+    if (error) {
+      console.error('Error actualizando liquidez:', error);
+      return;
+    }
+
+    setBusinessLiquidity(val);
   };
+
 
   const toggleAddition = (key: keyof typeof additions) => {
     setAdditions(prev => ({ ...prev, [key]: !prev[key] }));
