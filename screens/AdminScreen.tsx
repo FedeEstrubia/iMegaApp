@@ -106,7 +106,7 @@ const AdminScreen: React.FC = () => {
     setImageUrlInput('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const productData: Product = {
       ...form as Product,
@@ -120,10 +120,50 @@ const AdminScreen: React.FC = () => {
       ]
     };
     if (editingId) {
-      updateInventoryItem(productData);
+      await updateInventoryItem(productData);
     } else {
-      addInventoryItem(productData);
+      await addInventoryItem(productData);
+
+      // BONUS AUTOMATICO POR REACONDICIONAMIENTO
+
+      const bonusAmount = 40;
+
+      // IDs reales de Supabase (pegá los tuyos acá)
+      const FEDE_ID = '4a72b93a-fd19-4168-9719-f53cde92f588';
+      const FABRI_ID = '3b725091-ba25-45b2-a12d-6ae0e8a00989';
+      const FELI_ID = 'd89e21b3-874c-448a-b093-f420b377e624';
+
+      if (additions.workFede) {
+        await supabase.from('partner_ledger').insert({
+          partner_id: FEDE_ID,
+          type: 'bonus',
+          amount_usd: bonusAmount,
+          note: `Reacondicionamiento ${productData.name}`
+        });
+      }
+
+      if (additions.workFabri) {
+        await supabase.from('partner_ledger').insert({
+          partner_id: FABRI_ID,
+          type: 'bonus',
+          amount_usd: bonusAmount,
+          note: `Reacondicionamiento ${productData.name}`
+        });
+      }
+
+      if (additions.workFeli) {
+        await supabase.from('partner_ledger').insert({
+          partner_id: FELI_ID,
+          type: 'bonus',
+          amount_usd: bonusAmount,
+          note: `Reacondicionamiento ${productData.name}`
+        });
+      }
     }
+
+
+
+
     setShowModal(false);
     resetForm();
   };
