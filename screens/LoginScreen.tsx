@@ -80,10 +80,7 @@ const LoginScreen: React.FC = () => {
 
         {/* Headlines */}
         <div className="mb-8 text-center space-y-3">
-          <h1 className="text-[#111418] dark:text-white text-[28px] font-bold leading-tight tracking-tight">Bienvenido de nuevo</h1>
-          <p className="text-[#637588] dark:text-[#93adc8] text-base font-normal leading-relaxed px-2">
-            Ingresa tu email para recibir un enlace mágico de acceso seguro sin contraseña.
-          </p>
+          <h1 className="text-[#111418] dark:text-white text-[28px] font-bold leading-tight tracking-tight">Bienvenidos a iMega</h1>
         </div>
 
         {/* Message Alert */}
@@ -98,11 +95,8 @@ const LoginScreen: React.FC = () => {
           <form onSubmit={handleSubmit} className="w-full space-y-6">
             {/* Email Input */}
             <div className="flex flex-col gap-2">
-              <label className="text-[#111418] dark:text-white text-sm font-semibold pl-1" htmlFor="email">Correo Electrónico</label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <span className="material-symbols-outlined text-[#637588] dark:text-[#93adc8]">mail</span>
-                </div>
+
                 <input
 
                   type="text"
@@ -133,7 +127,7 @@ const LoginScreen: React.FC = () => {
                 <span className="material-symbols-outlined animate-spin">progress_activity</span>
               ) : (
                 <>
-                  <span>Enviar Enlace Mágico</span>
+                  <span>Ingresar</span>
                   <span className="material-symbols-outlined text-[20px]">send</span>
                 </>
               )}
