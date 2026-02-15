@@ -587,17 +587,24 @@ const AdminScreen: React.FC = () => {
                 </label>
 
                 <select
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value, storage: "" })}
-                  className="input-style"
+                  value={form.name || ""}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      name: e.target.value,
+                      storage: ""
+                    })
+                  }
                 >
                   <option value="">Seleccionar modelo</option>
+
                   {Object.keys(IPHONE_CONFIG).map(model => (
                     <option key={model} value={model}>
                       {model}
                     </option>
                   ))}
                 </select>
+
 
               </div>
                 <div className="grid grid-cols-2 gap-4">
