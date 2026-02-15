@@ -310,6 +310,13 @@ const AdminScreen: React.FC = () => {
           <span className="material-symbols-outlined">add_circle</span>
           <span>Añadir Nuevo iPhone</span>
         </button>
+        <button
+          onClick={() => navigate('/admin/partners')}
+          className="w-full flex items-center justify-center gap-3 p-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-all"
+        >
+          <span className="material-symbols-outlined">account_balance</span>
+          <span>Balance Socios</span>
+        </button>
 
         {/* Inventario */}
         <div className="space-y-4">
