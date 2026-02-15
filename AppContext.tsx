@@ -27,7 +27,7 @@ interface AppContextType {
   updateQuantity: (productId: string, delta: number) => void;
   toggleSaved: (productId: string) => void;
   isSaved: (productId: string) => boolean;
-  addInventoryItem: (product: Product) => void;
+  addInventoryItem: (product: Product, category: 'phones' | 'cases' | 'accessories') => void;
   updateInventoryItem: (product: Product) => void;
   deleteInventoryItem: (productId: string) => void;
   calculateTradeInValue: () => number;
@@ -367,51 +367,83 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUseTradeIn(false);
   };
 
-  const addInventoryItem = async (product: Product) => {
-    const { id, ...rest } = product;
+  const addInventoryItem = async (
+    product: Product,
+    category: 'phones' | 'cases' | 'accessories'
+  ) => {
 
-    // Map to snake_case for DB
-    const dbPayload = {
-      ...rest,
-      image_url: product.imageUrl,
-      cost_price: product.costPrice,
-      original_price: product.originalPrice,
-      battery_health: product.batteryHealth,
-      // Ensure we don't send camelCase if DB is strict, but usually extra keys are ignored or we should omit them explicitly if needed.
-      // For now, sending both is risky if DB has strict schema, but mapping ensures the snake_case keys exist.
-      // Better to explicitly construct the object if we know the schema.
-      // Let's assume strict snake_case is needed and create a clean object.
-    };
+    if (category === 'phones') {
 
-    // Clean payload: remove camelCase versions to avoid DB errors if columns don't exist
-    const { imageUrl, costPrice, originalPrice, batteryHealth, ...cleanRest } = rest;
-    const finalPayload = {
-      ...cleanRest,
-      image_url: imageUrl,
-      cost_price: costPrice,
-      original_price: originalPrice,
-      battery_health: batteryHealth
-    };
+      const { id, imageUrl, costPrice, originalPrice, batteryHealth, ...rest } = product;
 
-    const { data, error } = await supabase.from('products').insert([finalPayload]).select().single();
-
-    if (error) {
-      console.error('Error adding product:', error);
-    } else if (data) {
-      // When we get data back, we need to map it back to camelCase for local state?
-      // OR just re-fetch inventory. Re-fetching is safer for consistency.
-      // But to be fast, we can just append the local product (with the new ID).
-      // Actually, data returned from insert will be snake_case.
-      const newProduct = {
-        ...data,
-        imageUrl: data.image_url,
-        costPrice: data.cost_price,
-        originalPrice: data.original_price,
-        batteryHealth: data.battery_health,
+      const payload = {
+        ...rest,
+        image_url: imageUrl,
+        cost_price: costPrice,
+        original_price: originalPrice,
+        battery_health: batteryHealth
       };
-      setInventory(prev => [newProduct, ...prev]);
+
+      const { data, error } = await supabase
+        .from('products')
+        .insert([payload])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding phone:', error);
+        return;
+      }
+
+      await fetchInventory();
+    }
+
+
+    if (category === 'cases') {
+
+      const payload = {
+        name: product.name,
+        price: product.price,
+        color: product.color,
+        thumbnails: product.thumbnails,
+        is_active: true
+      };
+
+      const { error } = await supabase
+        .from('fundas')
+        .insert([payload]);
+
+      if (error) {
+        console.error('Error adding case:', error);
+        return;
+      }
+
+      await fetchInventory();
+    }
+
+
+    if (category === 'accessories') {
+
+      const payload = {
+        name: product.name,
+        price: product.price,
+        thumbnails: product.thumbnails,
+        is_active: true
+      };
+
+      const { error } = await supabase
+        .from('accesorios')
+        .insert([payload]);
+
+      if (error) {
+        console.error('Error adding accessory:', error);
+        return;
+      }
+
+      await fetchInventory();
     }
   };
+
 
   const updateInventoryItem = async (product: Product) => {
     // Clean payload and map to snake_case
