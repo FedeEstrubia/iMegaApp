@@ -8,7 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { supabase } from "../services/db";
+import { supabase } from "./services/supabase";
 
 // ======================================================
 // Types (mantenidos simples para no romper tu build)
