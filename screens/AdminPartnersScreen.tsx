@@ -43,6 +43,9 @@ const AdminPartnersScreen: React.FC = () => {
             setPartners(partnersData || []);
             setLedger(ledgerData || []);
             setLoading(false);
+            console.log("PARTNERS DATA:", partnersData);
+            console.log("PARTNERS ERROR:", error);
+
         };
 
         fetchData();
