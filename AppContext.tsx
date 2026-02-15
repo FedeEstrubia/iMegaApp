@@ -236,6 +236,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const fetchCases = async () => {
+    const { data, error } = await supabase
+      .from('fundas')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching fundas:', error);
+      return;
+    }
+
+    setCases(data || []);
+  };
+
+  const fetchAccessories = async () => {
+    const { data, error } = await supabase
+      .from('accesorios')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching accesorios:', error);
+      return;
+    }
+
+    setAccessories(data || []);
+  };
+
+
   useEffect(() => {
     let mounted = true;
 
