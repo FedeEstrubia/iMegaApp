@@ -213,14 +213,14 @@ const AdminScreen: React.FC = () => {
     };
 
     if (editingId) {
+      const finalProduct = { ...productData, id: editingId };
+
       if (activeCategory === 'phones') {
-        await updateInventoryItem(editingId, productData);
+        await updateInventoryItem(finalProduct);
       } else if (activeCategory === 'cases') {
-        await updateCaseItem(productData.id, productData);
-
+        await updateCaseItem(finalProduct);
       } else {
-        await updateAccessoryItem(productData.id, productData);
-
+        await updateAccessoryItem(finalProduct);
       }
     }
     else {
