@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase'; // ajustá si tu ruta es distinta
+import { supabase } from '../services/supabase';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../AppContext';
 
