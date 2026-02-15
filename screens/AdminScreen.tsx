@@ -795,6 +795,34 @@ const AdminScreen: React.FC = () => {
                 </>
               )}
 
+              {isAccessory && (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombre del Accesorio</label>
+                    <input
+                      required
+                      type="text"
+                      value={form.name}
+                      onChange={e => setForm({ ...form, name: e.target.value })}
+                      className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
+                      placeholder="Ej: Cargador 20W"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Categoría</label>
+                    <input
+                      required
+                      type="text"
+                      value={form.description}
+                      onChange={e => setForm({ ...form, description: e.target.value })}
+                      className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
+                      placeholder="Ej: Cargadores, Audio..."
+                    />
+                  </div>
+                </>
+              )}
+
 
               {/* Precio de Venta */}
               <div className="space-y-1">
@@ -808,8 +836,9 @@ const AdminScreen: React.FC = () => {
             </form>
           </div>
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 

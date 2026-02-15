@@ -100,6 +100,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       price: product.price,
       color: product.color,
       thumbnails: product.thumbnails || [],
+      compatible_models: product.storage ? [product.storage] : [],
     };
 
     const { error } = await supabase
@@ -134,7 +135,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    await fetchAccesories(); // importante para refrescar estado
+    await fetchAccessories(); // importante para refrescar estado
   };
 
 
@@ -635,7 +636,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateInventoryItem = async (product: Product) => {
     // Clean payload and map to snake_case
-    const { id, imageUrl, costPrice, originalPrice, batteryHealth, ...rest } = product;
+    const { id, imageUrl, costPrice, originalPrice, batteryHealth, specs, ...rest } = product;
     const finalPayload = {
       ...rest,
       image_url: imageUrl,
