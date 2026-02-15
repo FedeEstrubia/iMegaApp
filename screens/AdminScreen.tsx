@@ -13,23 +13,7 @@ const COST_ADDITIONS = {
   workFabri: 40,
   workFeli: 40
 };
-const IPHONE_MODELS = [
-  /*'iPhone 11',
-  'iPhone 11 Pro',
-  'iPhone 11 Pro Max',
-  'iPhone 12',
-  'iPhone 12 Pro',
-  'iPhone 12 Pro Max', */
-  'iPhone 13',
-  'iPhone 13 Pro',
-  'iPhone 13 Pro Max',
-  'iPhone 14',
-  'iPhone 14 Pro',
-  'iPhone 14 Pro Max',
-  'iPhone 15',
-  'iPhone 15 Pro',
-  'iPhone 15 Pro Max',
-];
+
 const IPHONE_CONFIG: Record<string, string[]> = {
   "iPhone 15": ["128GB", "256GB", "512GB"],
   "iPhone 15 Plus": ["128GB", "256GB", "512GB"],
@@ -45,6 +29,39 @@ const IPHONE_CONFIG: Record<string, string[]> = {
   "iPhone 13 Pro": ["128GB", "256GB", "512GB", "1TB"],
   "iPhone 13 Pro Max": ["128GB", "256GB", "512GB", "1TB"],
 };
+
+const CASE_TYPES = [
+  "Silicon Case",
+  "Magsafe Transparente",
+  "Glass Case",
+  "Walden",
+  "Magnetic",
+  "Matte",
+  "NorthFace Plástica",
+  "Puffer Plástica",
+  "NorthFace Cocida"
+];
+
+const COMPATIBLE_MODELS = [
+  "iPhone 15 Pro Max",
+  "iPhone 15 Pro",
+  "iPhone 15",
+  "iPhone 14 Pro Max",
+  "iPhone 14 Pro",
+  "iPhone 13 Pro Max"
+];
+
+const CASE_COLORS = [
+  "Negro",
+  "Blanco",
+  "Transparente",
+  "Beige",
+  "Azul",
+  "Rosa",
+  "Rojo"
+];
+
+
 
 
 const AdminScreen: React.FC = () => {
@@ -705,6 +722,76 @@ const AdminScreen: React.FC = () => {
                     <span className="text-xl font-black text-orange-600">${totalCalculatedCost}</span>
                   </div>
                 </div> </>)}
+              {isCase && (
+                <>
+                  {/* Tipo de Funda */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Modelo de Funda
+                    </label>
+
+                    <select
+                      value={form.name || ""}
+                      onChange={(e) =>
+                        setForm({ ...form, name: e.target.value })
+                      }
+                      className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
+                    >
+                      <option value="">Seleccionar tipo</option>
+                      {CASE_TYPES.map(type => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Compatible */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Compatible con
+                    </label>
+
+                    <select
+                      value={form.storage || ""}
+                      onChange={(e) =>
+                        setForm({ ...form, storage: e.target.value })
+                      }
+                      className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
+                    >
+                      <option value="">Seleccionar modelo</option>
+                      {COMPATIBLE_MODELS.map(model => (
+                        <option key={model} value={model}>
+                          {model}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Color */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Color
+                    </label>
+
+                    <select
+                      value={form.color || ""}
+                      onChange={(e) =>
+                        setForm({ ...form, color: e.target.value })
+                      }
+                      className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
+                    >
+                      <option value="">Seleccionar color</option>
+                      {CASE_COLORS.map(color => (
+                        <option key={color} value={color}>
+                          {color}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
 
               {/* Precio de Venta */}
               <div className="space-y-1">
