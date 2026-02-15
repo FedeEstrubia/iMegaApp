@@ -216,9 +216,9 @@ const AdminScreen: React.FC = () => {
       if (activeCategory === 'phones') {
         await updateInventoryItem(editingId, productData);
       } else if (activeCategory === 'cases') {
-        await updateCaseItem(editingId, productData);
+        await updateCaseItem(editingId!, productData);
       } else {
-        await updateAccessoryItem(editingId, productData);
+        await updateAccessoryItem(editingId!, productData);
       }
     }
     else {
