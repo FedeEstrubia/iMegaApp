@@ -15,14 +15,19 @@ const MarketplaceScreen: React.FC = () => {
   const filters = ['Todos', 'iPhone 15', 'Pro Max', 'Reacondicionado', 'Accesorios'];
 
   const filteredProducts = useMemo(() => {
-    return inventory.filter(p => {
-      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter = activeFilter === 'Todos' ||
-        p.name.includes(activeFilter) ||
-        (activeFilter === 'Reacondicionado' && p.condition === DeviceCondition.REFURBISHED);
-      return matchesSearch && matchesFilter;
-    });
+    return inventory
+      .filter(p => p.status === 'available') // 👈 SOLO DISPONIBLES
+      .filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesFilter =
+          activeFilter === 'Todos' ||
+          p.name.includes(activeFilter) ||
+          (activeFilter === 'Reacondicionado' && p.condition === DeviceCondition.REFURBISHED);
+
+        return matchesSearch && matchesFilter;
+      });
   }, [searchQuery, activeFilter, inventory]);
+
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const isAdmin = userRole === 'admin';
