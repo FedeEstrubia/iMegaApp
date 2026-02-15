@@ -322,7 +322,7 @@ const AdminScreen: React.FC = () => {
         <div className="space-y-4">
           <h3 className="text-xs font-black uppercase text-slate-400 pl-1 tracking-widest">Inventario</h3>
           <div className="space-y-3">
-            {inventory.map(p => {
+            {inventory.filter(p => p.status !== 'sold').map(p => {
               const gain = p.price - (p.costPrice || 0);
               const isConfirming = confirmDeleteId === p.id;
               return (
@@ -388,6 +388,41 @@ const AdminScreen: React.FC = () => {
             })}
           </div>
         </div>
+
+        {/* Historial de Ventas */}
+        <div className="space-y-4 mt-10">
+          <h3 className="text-xs font-black uppercase text-slate-400 pl-1 tracking-widest">
+            Historial de Ventas
+          </h3>
+
+          <div className="space-y-3">
+            {inventory
+              .filter(p => p.status === 'sold')
+              .map(p => {
+                const gain = p.price - (p.costPrice || 0);
+
+                return (
+                  <div
+                    key={p.id}
+                    className="flex flex-col p-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl"
+                  >
+                    <div className="flex justify-between">
+                      <p className="font-bold">{p.name}</p>
+                      <p className="text-emerald-500 font-bold">
+                        +${gain}
+                      </p>
+                    </div>
+
+                    <div className="text-xs text-slate-500 mt-2">
+                      Vendido por ${p.price}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+
+
       </div>
 
       {/* Modal Edición / Creación */}
