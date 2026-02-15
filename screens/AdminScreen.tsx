@@ -38,6 +38,16 @@ const AdminScreen: React.FC = () => {
   ];
 
 
+
+  const [activeCategory, setActiveCategory] = useState<'phones' | 'cases' | 'accessories'>('phones');
+
+  const currentList =
+    activeCategory === 'phones'
+      ? inventory
+      : activeCategory === 'cases'
+        ? cases
+        : accessories;
+
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [imageUrlInput, setImageUrlInput] = useState('');
@@ -367,12 +377,44 @@ const AdminScreen: React.FC = () => {
           <span className="material-symbols-outlined">account_balance</span>
           <span>Balance Socios</span>
         </button>
+        {/* Filtros por categoría */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveCategory('phones')}
+            className={`flex-1 py-2 rounded-xl text-sm font-bold ${activeCategory === 'phones'
+              ? 'bg-primary text-white'
+              : 'bg-slate-200 dark:bg-slate-800'
+              }`}
+          >
+            iPhones
+          </button>
+
+          <button
+            onClick={() => setActiveCategory('cases')}
+            className={`flex-1 py-2 rounded-xl text-sm font-bold ${activeCategory === 'cases'
+              ? 'bg-primary text-white'
+              : 'bg-slate-200 dark:bg-slate-800'
+              }`}
+          >
+            Fundas
+          </button>
+
+          <button
+            onClick={() => setActiveCategory('accessories')}
+            className={`flex-1 py-2 rounded-xl text-sm font-bold ${activeCategory === 'accessories'
+              ? 'bg-primary text-white'
+              : 'bg-slate-200 dark:bg-slate-800'
+              }`}
+          >
+            Accesorios
+          </button>
+        </div>
 
         {/* Inventario */}
         <div className="space-y-4">
           <h3 className="text-xs font-black uppercase text-slate-400 pl-1 tracking-widest">Inventario</h3>
           <div className="space-y-3">
-            {allProducts.filter(p => p.status !== 'sold' || !p.status).map(p => {
+            {currentList.filter(p => p.status !== 'sold' || !p.status).map(p => {
               const gain = p.price - (p.costPrice || 0);
               const isConfirming = confirmDeleteId === p.id;
               return (
