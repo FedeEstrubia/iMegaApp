@@ -256,6 +256,28 @@ const AdminScreen: React.FC = () => {
     } catch (error) {
       console.error("Error finalizando venta:", error);
     }
+
+    // 1️⃣ Obtener liquidez actual
+    const { data: settingsData } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'liquidity')
+      .single();
+
+    const currentLiquidity = Number(settingsData?.value || 0);
+
+    // 2️⃣ Calcular nueva liquidez
+    const newLiquidity = currentLiquidity + product.price;
+
+    // 3️⃣ Actualizar en DB
+    await supabase
+      .from('settings')
+      .update({ value: newLiquidity.toString() })
+      .eq('key', 'liquidity');
+
+    // 4️⃣ Actualizar liquidez en estado
+    setBusinessLiquidity(newLiquidity);
+
   };
 
 
