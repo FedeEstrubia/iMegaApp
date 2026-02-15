@@ -559,7 +559,24 @@ const AdminScreen: React.FC = () => {
               </div>
 
               {/* Datos Básicos */}
-              <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Modelo</label><select required type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-bold" /></div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Modelo
+                </label>
+
+                <select
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                  className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm font-bold"
+                >
+                  <option value="">Seleccionar modelo</option>
+                  {IPHONE_MODELS.map(model => (
+                    <option key={model} value={model}>
+                      {model}
+                    </option>
+                  ))}
+                </select>
+              </div>
               {isPhone && (<> <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Almacenamiento</label><select value={form.storage} onChange={e => setForm({ ...form, storage: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option></select></div>
                 <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Batería</label><input required type="text" value={form.batteryHealth} onChange={e => setForm({ ...form, batteryHealth: e.target.value })} className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm" /></div>
