@@ -872,7 +872,7 @@ const AdminScreen: React.FC = () => {
               </div>
 
               <button type="submit" className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform">
-                {editingId ? 'Guardar Cambios' : 'Publicar iPhone'}
+                {editingId ? 'Guardar Cambios' : 'Publicar'}
               </button>
             </form>
           </div>

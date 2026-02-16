@@ -563,7 +563,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       status: 'available',
       image_url: product.imageUrl,
       images: product.thumbnails || [],
-      specs: product.specs || []
+      specs: product.specs || [],
+      type: 'phone'
     };
 
     const { data, error } = await supabase
@@ -574,17 +575,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (error) {
       console.error('Error adding product:', error);
+      alert('Error al crear iPhone: ' + error.message);
     } else if (data) {
-      const newProduct: Product = {
-        ...product,
-        id: data.id,
-        imageUrl: data.image_url,
-        costPrice: data.cost_price,
-        originalPrice: data.original_price,
-        batteryHealth: data.battery_health,
-        thumbnails: data.images,
-      };
-      setInventory(prev => [...prev, newProduct]);
+      await fetchInventory(); // Ensure full sync
     }
   };
 
