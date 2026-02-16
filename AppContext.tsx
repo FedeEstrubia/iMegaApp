@@ -549,80 +549,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUseTradeIn(false);
   };
 
-  const addInventoryItem = async (
-    product: Product,
-    category: 'phones' | 'cases' | 'accessories'
-  ) => {
+  const addInventoryItem = async (product: Product) => {
+    // Clean payload and map to snake_case for 'products' table
+    const payload = {
+      name: product.name,
+      storage: product.storage,
+      price: product.price,
+      cost_price: product.costPrice,
+      original_price: product.originalPrice,
+      battery_health: product.batteryHealth,
+      condition: product.condition,
+      color: product.color,
+      status: 'available',
+      image_url: product.imageUrl,
+      images: product.thumbnails || [],
+      specs: product.specs || []
+    };
 
-    if (category === 'phones') {
+    const { data, error } = await supabase
+      .from('products')
+      .insert([payload])
+      .select()
+      .single();
 
-      const { id, imageUrl, costPrice, originalPrice, batteryHealth, ...rest } = product;
-
-      const payload = {
-        ...rest,
-        image_url: imageUrl,
-        cost_price: costPrice,
-        original_price: originalPrice,
-        battery_health: batteryHealth
+    if (error) {
+      console.error('Error adding product:', error);
+    } else if (data) {
+      const newProduct: Product = {
+        ...product,
+        id: data.id,
+        imageUrl: data.image_url,
+        costPrice: data.cost_price,
+        originalPrice: data.original_price,
+        batteryHealth: data.battery_health,
+        thumbnails: data.images,
       };
-
-      const { data, error } = await supabase
-        .from('products')
-        .insert([payload])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error adding phone:', error);
-        return;
-      }
-
-      await fetchInventory();
-    }
-
-
-    if (category === 'cases') {
-
-      const payload = {
-        name: product.name,
-        price: product.price,
-        color: product.color,
-        thumbnails: product.thumbnails,
-        is_active: true
-      };
-
-      const { error } = await supabase
-        .from('fundas')
-        .insert([payload]);
-
-      if (error) {
-        console.error('Error adding case:', error);
-        return;
-      }
-
-      await fetchInventory();
-    }
-
-
-    if (category === 'accessories') {
-
-      const payload = {
-        name: product.name,
-        price: product.price,
-        thumbnails: product.thumbnails,
-        is_active: true
-      };
-
-      const { error } = await supabase
-        .from('accesorios')
-        .insert([payload]);
-
-      if (error) {
-        console.error('Error adding accessory:', error);
-        return;
-      }
-
-      await fetchInventory();
+      setInventory(prev => [...prev, newProduct]);
     }
   };
 
