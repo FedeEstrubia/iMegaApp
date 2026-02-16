@@ -283,7 +283,14 @@ const AdminScreen: React.FC = () => {
     ];
 
     // Si es iPhone, agregar los 'flags' de costos adicionales a los specs para persistencia
-
+    if (activeCategory === 'phones') {
+      if (additions.courrier) finalSpecs.push({ label: 'addition_courrier', value: 'true', icon: 'local_shipping' });
+      if (additions.extras) finalSpecs.push({ label: 'addition_extras', value: 'true', icon: 'add_box' });
+      if (additions.battery) finalSpecs.push({ label: 'addition_battery', value: 'true', icon: 'battery_charging_full' });
+      if (additions.workFede) finalSpecs.push({ label: 'addition_workFede', value: 'true', icon: 'engineering' });
+      if (additions.workFabri) finalSpecs.push({ label: 'addition_workFabri', value: 'true', icon: 'engineering' });
+      if (additions.workFeli) finalSpecs.push({ label: 'addition_workFeli', value: 'true', icon: 'engineering' });
+    }
 
     let finalCostPrice = 0;
 

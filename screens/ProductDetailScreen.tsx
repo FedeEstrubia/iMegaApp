@@ -59,7 +59,10 @@ const ProductDetailScreen: React.FC = () => {
 
   const currentImage = selectedImage || product.imageUrl;
 
-  const safeSpecs = product.specs || [];
+  const safeSpecs = (product.specs || []).filter(
+    spec => !spec.label?.startsWith('addition_')
+  );
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased">
@@ -195,6 +198,7 @@ const ProductDetailScreen: React.FC = () => {
         <div className="px-4 mb-6">
           <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">Detalles del Dispositivo</h3>
           <div className="grid grid-cols-2 gap-3">
+
             {safeSpecs.map((spec, idx) => (
               <div key={idx} className="flex flex-col gap-2 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-surface-light dark:bg-surface-dark">
                 <div className="flex items-center justify-between">
