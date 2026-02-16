@@ -61,6 +61,16 @@ const CASE_COLORS = [
   "Rojo"
 ];
 
+const ACCESSORY_OPTIONS = [
+  "Cargador Original 20W",
+  "Cargador Replica 20W",
+  "AirPods Pro 2 Gen",
+  "Cable USB C to Lightning Original",
+  "Cable USB C to Lightning Replica",
+  "Cable USB C to C Original",
+  "Cable USB C to C Replica"
+];
+
 
 
 
@@ -959,14 +969,17 @@ const AdminScreen: React.FC = () => {
                 <>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombre del Accesorio</label>
-                    <input
+                    <select
                       required
-                      type="text"
                       value={form.name}
                       onChange={e => setForm({ ...form, name: e.target.value })}
                       className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
-                      placeholder="Ej: Cargador 20W"
-                    />
+                    >
+                      <option value="">Seleccionar accesorio</option>
+                      {ACCESSORY_OPTIONS.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="space-y-1">
