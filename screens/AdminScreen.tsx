@@ -667,11 +667,28 @@ const AdminScreen: React.FC = () => {
 
                   </div>
                   <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <div className="text-center"><p className="text-[8px] uppercase text-slate-400 font-black">Costo</p>${p.costPrice ?? (p as any).cost_price ?? 0}
+                    <div className="text-center">
+                      <p className="text-[8px] uppercase text-slate-400 font-black">Costo</p>
+                      <p className="text-xs font-bold">
+                        ${p.costPrice ?? 0}
+                      </p>
                     </div>
-                    <div className="text-center"><p className="text-[8px] uppercase text-primary font-black">Venta</p><p className="text-xs font-bold">${p.price}</p></div>
-                    <div className="text-center"><p className="text-[8px] uppercase text-emerald-500 font-black">Ganancia</p><p className="text-xs font-black text-emerald-400">+${gain}</p></div>
+
+                    <div className="text-center">
+                      <p className="text-[8px] uppercase text-primary font-black">Venta</p>
+                      <p className="text-xs font-bold">
+                        ${p.price}
+                      </p>
+                    </div>
+
+                    <div className="text-center">
+                      <p className="text-[8px] uppercase text-emerald-500 font-black">Ganancia</p>
+                      <p className="text-xs font-black text-emerald-400">
+                        +${gain}
+                      </p>
+                    </div>
                   </div>
+
                 </div>
               );
             })}
