@@ -283,7 +283,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const mappedFundas = data.map((f: any) => ({
         id: f.id,
         name: f.name,
-        price: f.price,
+        price: Number(f.price),
         originalPrice: 0,
         storage: 'N/A',
         color: f.color || 'N/A',
@@ -317,7 +317,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const mappedAcc = data.map((a: any) => ({
         id: a.id,
         name: a.name,
-        price: a.price,
+        price: Number(a.price),
         originalPrice: 0,
         storage: 'N/A',
         color: 'N/A',

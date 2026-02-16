@@ -336,40 +336,55 @@ const AdminScreen: React.FC = () => {
 
     if (!confirmSale) return;
 
+    console.log('--- Starting Sale Process ---');
+    console.log('Product:', product);
+
+    // 1. Calculate Financials (Force Numbers)
+    const price = Number(product.price);
+    const cost = Number(product.costPrice || 0);
+    const profit = price - cost;
+
+    console.log('Financials:', { price, cost, profit });
+
+    if (isNaN(price)) {
+      alert('Error: El precio del producto no es válido.');
+      return;
+    }
+
+    // 2. Partner Logic (Best Effort) - Non-blocking
     try {
-      const profit = product.price - (product.costPrice || 0);
+      if (profit > 0) {
+        const { data: partners, error: partnersError } = await supabase
+          .from('partners')
+          .select('*')
+          .eq('active', true);
 
-      if (profit <= 0) {
-        alert("No hay ganancia para distribuir.");
-        return;
+        if (partnersError) throw partnersError;
+
+        if (partners) {
+          for (const partner of partners) {
+            if (partner.role !== 'partner') continue;
+            const partnerShare = (profit * partner.profit_percent) / 100;
+            // Best effort insert
+            await supabase.from('partner_ledger').insert({
+              partner_id: partner.id,
+              type: 'profit',
+              amount_usd: partnerShare,
+              note: `Venta ${product.name}`
+            });
+          }
+          console.log('Partner ledger updated.');
+        }
+      } else {
+        console.log('No profit to distribute (profit <= 0).');
       }
+    } catch (error) {
+      console.error('Error updating partner ledger (non-critical):', error);
+      // We continue because the sale itself is more important
+    }
 
-      // Traer socios activos
-      const { data: partners, error: partnersError } = await supabase
-        .from('partners')
-        .select('*')
-        .eq('active', true);
-
-      if (partnersError || !partners) {
-        console.error(partnersError);
-        return;
-      }
-
-      // Insertar movimientos por socio
-      for (const partner of partners) {
-        if (partner.role !== 'partner') continue;
-
-        const partnerShare = (profit * partner.profit_percent) / 100;
-
-        await supabase.from('partner_ledger').insert({
-          partner_id: partner.id,
-          type: 'profit',
-          amount_usd: partnerShare,
-          note: `Venta ${product.name}`
-        });
-      }
-
-      // Actualizar producto a sold
+    // 3. Mark Item as Sold (Critical)
+    try {
       if (activeCategory === 'phones') {
         await updateInventoryItem({ ...product, status: 'sold' });
       } else if (activeCategory === 'cases') {
@@ -377,34 +392,42 @@ const AdminScreen: React.FC = () => {
       } else {
         await sellAccessoryItem(product.id);
       }
-
-      alert("Venta registrada correctamente.");
-
+      console.log('Item marked as sold.');
     } catch (error) {
-      console.error("Error finalizando venta:", error);
+      console.error('Error marking item as sold:', error);
+      alert('Error crítico al actualizar el estado del producto: ' + JSON.stringify(error));
+      return; // Stop here if we can't mark as sold
     }
 
-    // 1️⃣ Obtener liquidez actual
-    const { data: settingsData } = await supabase
-      .from('settings')
-      .select('value')
-      .eq('key', 'liquidity')
-      .single();
+    // 4. Update Liquidity (Critical)
+    try {
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'liquidity')
+        .single();
 
-    const currentLiquidity = Number(settingsData?.value || 0);
+      if (settingsError) throw settingsError;
 
-    // 2️⃣ Calcular nueva liquidez
-    const newLiquidity = currentLiquidity + product.price;
+      const currentLiquidity = Number(settingsData?.value || 0);
+      const newLiquidity = currentLiquidity + price;
 
-    // 3️⃣ Actualizar en DB
-    await supabase
-      .from('settings')
-      .update({ value: newLiquidity.toString() })
-      .eq('key', 'liquidity');
+      console.log('Liquidity Update:', { current: currentLiquidity, add: price, new: newLiquidity });
 
-    // 4️⃣ Actualizar liquidez en estado
-    setBusinessLiquidity(newLiquidity);
+      const { error: updateError } = await supabase
+        .from('settings')
+        .update({ value: newLiquidity })
+        .eq('key', 'liquidity');
 
+      if (updateError) throw updateError;
+
+      setBusinessLiquidity(newLiquidity);
+      alert("Venta registrada y liquidez actualizada.");
+
+    } catch (error) {
+      console.error('Error updating liquidity:', error);
+      alert('Venta registrada, pero hubo un error actualizando la liquidez.');
+    }
   };
 
   const isPhone = activeCategory === 'phones';
