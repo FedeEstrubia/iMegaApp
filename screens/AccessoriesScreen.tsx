@@ -18,6 +18,7 @@ const AccessoriesScreen: React.FC = () => {
         const sourceData = activeTab === 'Fundas' ? cases : accessories;
 
         return sourceData.filter(p => {
+            if (p.status === 'sold') return false;
             const name = p.name.toLowerCase();
             if (searchQuery && !name.includes(searchQuery.toLowerCase())) return false;
             return true;

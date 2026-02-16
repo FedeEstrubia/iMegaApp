@@ -82,6 +82,8 @@ const AdminScreen: React.FC = () => {
     updateAccessoryItem,
     deleteCaseItem,
     deleteAccessoryItem,
+    sellCaseItem,
+    sellAccessoryItem,
 
   } = useAppContext();
 
@@ -311,6 +313,8 @@ const AdminScreen: React.FC = () => {
   const totalPotentialSales = inventory.reduce((acc, p) => acc + p.price, 0);
   const totalPotentialGain = totalPotentialSales - totalCostInventory;
 
+  const soldHistory = [...inventory, ...cases, ...accessories].filter(p => p.status === 'sold');
+
   const markAsSold = async (product: Product) => {
     const confirmSale = window.confirm(
       `¿Confirmar venta de ${product.name}?\n\nEsto generará movimientos financieros.`
@@ -352,10 +356,13 @@ const AdminScreen: React.FC = () => {
       }
 
       // Actualizar producto a sold
-      await updateInventoryItem({
-        ...product,
-        status: 'sold'
-      });
+      if (activeCategory === 'phones') {
+        await updateInventoryItem({ ...product, status: 'sold' });
+      } else if (activeCategory === 'cases') {
+        await sellCaseItem(product.id);
+      } else {
+        await sellAccessoryItem(product.id);
+      }
 
       alert("Venta registrada correctamente.");
 
@@ -577,8 +584,7 @@ const AdminScreen: React.FC = () => {
           </h3>
 
           <div className="space-y-3">
-            {inventory
-              .filter(p => p.status === 'sold')
+            {soldHistory
               .map(p => {
                 const gain = p.price - (p.costPrice || 0);
 

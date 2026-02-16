@@ -39,6 +39,8 @@ interface AppContextType {
   updateAccessoryItem: (product: Product) => Promise<void>;
   addCaseItem: (product: Product) => Promise<void>;
   addAccessoryItem: (product: Product) => Promise<void>;
+  sellCaseItem: (id: string) => Promise<void>;
+  sellAccessoryItem: (id: string) => Promise<void>;
 
 
 
@@ -192,7 +194,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     // 2. Fetch Fundas
-    const { data: fundasData, error: fundasError } = await supabase.from('fundas').select('*').eq('is_active', true);
+    const { data: fundasData, error: fundasError } = await supabase.from('fundas').select('*'); // Traemos TODO para historial
     if (fundasData) {
       const mappedFundas = fundasData.map((f: any) => ({
         id: f.id,
@@ -201,10 +203,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         originalPrice: 0,
         storage: 'N/A',
         color: f.color || 'N/A',
-        condition: 'New', // Default for accessories
+        condition: 'New',
         batteryHealth: 'N/A',
         imageUrl: (f.thumbnails && f.thumbnails[0]) || 'https://placehold.co/400x500?text=Funda',
         thumbnails: f.thumbnails || [],
+        status: f.is_active ? 'available' : 'sold', // 👈 Mapeamos estado
         specs: [
           { label: 'Marca', value: f.brand || 'Genérica' },
           { label: 'Material', value: f.material || 'N/A' },
@@ -215,19 +218,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     // 3. Fetch Accesorios
-    const { data: accData, error: accError } = await supabase.from('accesorios').select('*').eq('is_active', true);
+    const { data: accData, error: accError } = await supabase.from('accesorios').select('*'); // Traemos TODO para historial
     if (accData) {
       const mappedAcc = accData.map((a: any) => ({
         id: a.id,
         name: a.name,
         price: a.price,
         originalPrice: 0,
-        storage: 'N/A', // Not applicable
+        storage: 'N/A',
         color: 'N/A',
         condition: 'New',
         batteryHealth: 'N/A',
         imageUrl: (a.thumbnails && a.thumbnails[0]) || 'https://placehold.co/400x500?text=Accesorio',
         thumbnails: a.thumbnails || [],
+        status: a.is_active ? 'available' : 'sold', // 👈 Mapeamos estado
         specs: [
           { label: 'Categoría', value: a.category },
           { label: 'Marca', value: a.brand || 'Genérica' }
@@ -235,6 +239,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }));
       setAccessories(mappedAcc);
     }
+  };
+
+
+  const sellCaseItem = async (id: string) => {
+    const { error } = await supabase
+      .from('fundas')
+      .update({ is_active: false })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error selling case:', error);
+      return;
+    }
+    await fetchInventory();
+  };
+
+  const sellAccessoryItem = async (id: string) => {
+    const { error } = await supabase
+      .from('accesorios')
+      .update({ is_active: false })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error selling accessory:', error);
+      return;
+    }
+    await fetchInventory();
   };
 
   const fetchCases = async () => {
@@ -714,6 +745,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       deleteAccessoryItem,
       addAccessoryItem,
       addCaseItem,
+      sellCaseItem,
+      sellAccessoryItem,
 
     }}>
       {children}
