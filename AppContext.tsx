@@ -571,7 +571,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       color: product.color,
       status: 'available',
       image_url: product.imageUrl,
-      images: product.thumbnails || [],
+      thumbnails: product.thumbnails || [],
       specs: product.specs || [],
       type: 'phone'
     };
