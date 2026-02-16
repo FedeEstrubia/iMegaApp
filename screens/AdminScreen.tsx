@@ -163,8 +163,30 @@ const AdminScreen: React.FC = () => {
 
   const handleOpenEdit = (product: Product) => {
     setForm(product);
-    setBaseCost(product.costPrice); // Al editar, empezamos con el costo guardado como base
-    setAdditions({ courrier: false, extras: false, battery: false }); // Reset additions on edit
+
+    // 1. Restaurar el estado de los checkboxes desde 'specs'
+    const restoredAdditions = {
+      courrier: product.specs?.some(s => s.label === 'addition_courrier') || false,
+      extras: product.specs?.some(s => s.label === 'addition_extras') || false,
+      battery: product.specs?.some(s => s.label === 'addition_battery') || false,
+      workFede: product.specs?.some(s => s.label === 'addition_workFede') || false,
+      workFabri: product.specs?.some(s => s.label === 'addition_workFabri') || false,
+      workFeli: product.specs?.some(s => s.label === 'addition_workFeli') || false,
+    };
+
+    // 2. Calcular cuánto costaron esos extras
+    const extrasCost =
+      (restoredAdditions.courrier ? COST_ADDITIONS.courrier : 0) +
+      (restoredAdditions.extras ? COST_ADDITIONS.extras : 0) +
+      (restoredAdditions.battery ? COST_ADDITIONS.battery : 0) +
+      (restoredAdditions.workFede ? COST_ADDITIONS.workFede : 0) +
+      (restoredAdditions.workFabri ? COST_ADDITIONS.workFabri : 0) +
+      (restoredAdditions.workFeli ? COST_ADDITIONS.workFeli : 0);
+
+    // 3. Restaurar el costo BASE original (Costo Total - Extras)
+    setBaseCost((product.costPrice || 0) - extrasCost);
+    setAdditions(restoredAdditions);
+
     setEditingId(product.id);
     setShowModal(true);
   };
@@ -200,16 +222,29 @@ const AdminScreen: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Preparar specs básicos
+    let finalSpecs = [
+      { label: 'Salud Batería', value: form.batteryHealth || '100%', icon: 'battery_full' },
+      { label: 'Estado', value: form.condition || 'Nuevo', icon: 'stars' },
+      { label: 'Color', value: form.color || 'N/A', icon: 'palette' },
+    ];
+
+    // Si es iPhone, agregar los 'flags' de costos adicionales a los specs para persistencia
+    if (activeCategory === 'phones') {
+      if (additions.courrier) finalSpecs.push({ label: 'addition_courrier', value: 'true', icon: 'local_shipping' });
+      if (additions.extras) finalSpecs.push({ label: 'addition_extras', value: 'true', icon: 'add_box' });
+      if (additions.battery) finalSpecs.push({ label: 'addition_battery', value: 'true', icon: 'battery_charging_full' });
+      if (additions.workFede) finalSpecs.push({ label: 'addition_workFede', value: 'true', icon: 'engineering' });
+      if (additions.workFabri) finalSpecs.push({ label: 'addition_workFabri', value: 'true', icon: 'engineering' });
+      if (additions.workFeli) finalSpecs.push({ label: 'addition_workFeli', value: 'true', icon: 'engineering' });
+    }
+
     const productData: Product = {
       ...form as Product,
 
       costPrice: totalCalculatedCost,
       thumbnails: form.thumbnails || [],
-      specs: [
-        { label: 'Salud Batería', value: form.batteryHealth || '100%', icon: 'battery_full' },
-        { label: 'Estado', value: form.condition || 'Nuevo', icon: 'stars' },
-        { label: 'Color', value: form.color || 'N/A', icon: 'palette' },
-      ]
+      specs: finalSpecs
     };
 
     if (editingId) {
