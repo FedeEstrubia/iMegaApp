@@ -9,9 +9,9 @@ const COST_ADDITIONS = {
   courrier: 30,
   extras: 10,
   battery: 30,
-  workFede: 40,
-  workFabri: 40,
-  workFeli: 40
+  workFede: 30,
+  workFabri: 30,
+  workFeli: 30
 };
 
 const IPHONE_CONFIG: Record<string, string[]> = {
@@ -899,7 +899,7 @@ const AdminScreen: React.FC = () => {
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFede ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
                       >
                         <span className="material-symbols-outlined text-[16px]">add_box</span>
-                        Work Fede ($40)
+                        Work Fede ($30)
                       </button>
                       <button
                         type="button"
@@ -907,7 +907,7 @@ const AdminScreen: React.FC = () => {
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFabri ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
                       >
                         <span className="material-symbols-outlined text-[16px]">add_box</span>
-                        Work Fabri ($40)
+                        Work Fabri ($30)
                       </button>
                       <button
                         type="button"
@@ -915,7 +915,7 @@ const AdminScreen: React.FC = () => {
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 transition-all text-[11px] font-bold ${additions.workFeli ? 'bg-purple-500/20 border-purple-500 text-purple-500' : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400'}`}
                       >
                         <span className="material-symbols-outlined text-[16px]">add_box</span>
-                        Work Feli ($40)
+                        Work Feli ($30)
                       </button>
                     </div>
                   </div>
