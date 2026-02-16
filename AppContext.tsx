@@ -550,15 +550,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addInventoryItem = async (product: Product) => {
-    // Clean payload and map to snake_case for 'products' table
+    // Validation and casting
+    const finalPrice = Number(product.price);
+    const finalCost = Number(product.costPrice);
+    const finalOriginalPrice = product.originalPrice ? Number(product.originalPrice) : null;
+
+    if (isNaN(finalPrice) || isNaN(finalCost)) {
+      alert('Error: Precio o Costo no son válidos (NaN).');
+      return;
+    }
+
     const payload = {
       name: product.name,
       storage: product.storage,
-      price: product.price,
-      cost_price: product.costPrice,
-      original_price: product.originalPrice,
-      battery_health: product.batteryHealth,
-      condition: product.condition,
+      price: finalPrice,
+      cost_price: finalCost,
+      original_price: finalOriginalPrice,
+      battery_health: product.batteryHealth || '100%',
+      condition: product.condition || 'Nuevo',
       color: product.color,
       status: 'available',
       image_url: product.imageUrl,
@@ -566,6 +575,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       specs: product.specs || [],
       type: 'phone'
     };
+
+    console.log('Attempting to create phone with payload:', payload);
 
     const { data, error } = await supabase
       .from('products')
@@ -575,8 +586,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (error) {
       console.error('Error adding product:', error);
-      alert('Error al crear iPhone: ' + error.message);
+      alert('Error Base de Datos: ' + (error.message || JSON.stringify(error)));
     } else if (data) {
+      console.log('Phone created successfully:', data);
       await fetchInventory(); // Ensure full sync
     }
   };

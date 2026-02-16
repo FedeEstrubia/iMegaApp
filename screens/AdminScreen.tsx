@@ -249,30 +249,44 @@ const AdminScreen: React.FC = () => {
       specs: finalSpecs
     };
 
-    if (editingId) {
-      const finalProduct = { ...productData, id: editingId };
+    console.log('Submitting Product:', {
+      editingId,
+      activeCategory,
+      productData
+    });
 
-      if (activeCategory === 'phones') {
-        await updateInventoryItem(finalProduct);
-      } else if (activeCategory === 'cases') {
-        await updateCaseItem(finalProduct);
-      } else {
-        await updateAccessoryItem(finalProduct);
-      }
-    }
-    else {
-      // 🟢 MODO CREACIÓN
-      if (activeCategory === 'phones') {
-        await addInventoryItem(productData);
-      } else if (activeCategory === 'cases') {
-        await addCaseItem(productData);
-      } else {
-        await addAccessoryItem(productData);
-      }
-    }
+    try {
+      if (editingId) {
+        const finalProduct = { ...productData, id: editingId };
 
-    setShowModal(false);
-    resetForm();
+        if (activeCategory === 'phones') {
+          await updateInventoryItem(finalProduct);
+        } else if (activeCategory === 'cases') {
+          await updateCaseItem(finalProduct);
+        } else {
+          await updateAccessoryItem(finalProduct);
+        }
+      }
+      else {
+        // 🟢 MODO CREACIÓN
+        console.log('Creating new item in category:', activeCategory);
+        if (activeCategory === 'phones') {
+          console.log('Calling addInventoryItem...');
+          await addInventoryItem(productData);
+          console.log('addInventoryItem finished.');
+        } else if (activeCategory === 'cases') {
+          await addCaseItem(productData);
+        } else {
+          await addAccessoryItem(productData);
+        }
+      }
+
+      setShowModal(false);
+      resetForm();
+    } catch (error) {
+      console.error('Error in handleSubmit:', error);
+      alert('Error al guardar: ' + error);
+    }
   };
 
 
