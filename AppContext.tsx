@@ -279,7 +279,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    setCases(data || []);
+    if (data) {
+      const mappedFundas = data.map((f: any) => ({
+        id: f.id,
+        name: f.name,
+        price: f.price,
+        originalPrice: 0,
+        storage: 'N/A',
+        color: f.color || 'N/A',
+        condition: 'New',
+        batteryHealth: 'N/A',
+        imageUrl: (f.thumbnails && f.thumbnails[0]) || 'https://placehold.co/400x500?text=Funda',
+        thumbnails: f.thumbnails || [],
+        status: f.is_active ? 'available' : 'sold',
+        specs: [
+          { label: 'Marca', value: f.brand || 'Genérica' },
+          { label: 'Material', value: f.material || 'N/A' },
+          { label: 'Compatible', value: (f.compatible_models || []).join(', ') }
+        ]
+      }));
+      setCases(mappedFundas);
+    }
   };
 
   const fetchAccessories = async () => {
@@ -293,7 +313,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    setAccessories(data || []);
+    if (data) {
+      const mappedAcc = data.map((a: any) => ({
+        id: a.id,
+        name: a.name,
+        price: a.price,
+        originalPrice: 0,
+        storage: 'N/A',
+        color: 'N/A',
+        condition: 'New',
+        batteryHealth: 'N/A',
+        imageUrl: (a.thumbnails && a.thumbnails[0]) || 'https://placehold.co/400x500?text=Accesorio',
+        thumbnails: a.thumbnails || [],
+        status: a.is_active ? 'available' : 'sold',
+        specs: [
+          { label: 'Categoría', value: a.category },
+          { label: 'Marca', value: a.brand || 'Genérica' }
+        ]
+      }));
+      setAccessories(mappedAcc);
+    }
   };
 
 
