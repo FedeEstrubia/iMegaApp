@@ -27,7 +27,7 @@ interface AppContextType {
   updateQuantity: (productId: string, delta: number) => void;
   toggleSaved: (productId: string) => void;
   isSaved: (productId: string) => boolean;
-  addInventoryItem: (product: Product, category: 'phones' | 'cases' | 'accessories') => void;
+  addInventoryItem: (product: Product) => void;
   updateInventoryItem: (product: Product) => void;
   deleteInventoryItem: (productId: string) => void;
   calculateTradeInValue: () => number;
