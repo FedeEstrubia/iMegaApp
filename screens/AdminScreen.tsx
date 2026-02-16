@@ -295,7 +295,7 @@ const AdminScreen: React.FC = () => {
     const productData: Product = {
       ...form as Product,
 
-      costPrice: totalCalculatedCost,
+      costPrice: activeCategory === 'phones' ? totalCalculatedCost : Number(form.costPrice || 0),
       thumbnails: form.thumbnails || [],
       specs: finalSpecs
     };
