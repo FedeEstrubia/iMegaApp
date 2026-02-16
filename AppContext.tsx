@@ -161,33 +161,64 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };// importante para refrescar estado
 
 
-  const deleteCaseItem = async (id: string) => {
-    const { error } = await supabase
-      .from('fundas')
-      .delete()
-      .eq('id', id);
+  const deleteInventoryItem = async (productId: string) => {
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', productId);
 
-    if (error) {
-      console.error(error);
-      return;
+      if (error) {
+        console.error('Error deleting product:', error);
+        alert(`Error al eliminar iPhone: ${error.message || 'Error desconocido'}`);
+        return;
+      }
+
+      setInventory(prev => prev.filter(p => p.id !== productId));
+      setCart(prev => prev.filter(p => p.id !== productId));
+      setSavedIds(prev => prev.filter(id => id !== productId));
+
+    } catch (err: any) {
+      console.error('Catch error in deleteInventoryItem:', err);
+      alert('Error crítico de red o sistema al intentar eliminar.');
     }
-
-    await fetchInventory();
   };
 
+  const deleteCaseItem = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('fundas')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting funda:', error);
+        alert(`Error al eliminar funda: ${error.message}`);
+        return;
+      }
+
+      await fetchInventory();
+    } catch (err: any) {
+      console.error('Catch error in deleteCaseItem:', err);
+      alert('Error al intentar eliminar la funda.');
+    }
+  };
 
   const deleteAccessoryItem = async (id: string) => {
-    const { error } = await supabase
-      .from('accesorios')
-      .delete()
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('accesorios')
+        .delete()
+        .eq('id', id);
 
-    if (error) {
-      console.error('Error deleting accessory:', error);
-      return;
+      if (error) {
+        console.error('Error deleting accessory:', error);
+        alert(`Error al eliminar accesorio: ${error.message}`);
+        return;
+      }
+
+      await fetchInventory();
+    } catch (err: any) {
+      console.error('Catch error in deleteAccessoryItem:', err);
+      alert('Error al intentar eliminar el accesorio.');
     }
-
-    await fetchInventory();
   };
 
 
@@ -677,17 +708,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error('Error updating product:', error);
     } else {
       setInventory(prev => prev.map(item => item.id === product.id ? product : item));
-    }
-  };
-
-  const deleteInventoryItem = async (productId: string) => {
-    const { error } = await supabase.from('products').delete().eq('id', productId);
-    if (error) {
-      console.error('Error deleting product:', error);
-    } else {
-      setInventory(prev => prev.filter(p => p.id !== productId));
-      setCart(prev => prev.filter(p => p.id !== productId));
-      setSavedIds(prev => prev.filter(id => id !== productId));
     }
   };
 
