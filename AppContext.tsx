@@ -120,26 +120,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 
   const updateAccessoryItem = async (product: Product) => {
-    const payload = {
-      name: product.name,
-      price: product.price,
-      thumbnails: product.thumbnails || [],
-      category: product.description || 'General',
-    };
-
     const { error } = await supabase
       .from('accesorios')
-      .update(payload)
+      .update({
+        name: product.name,
+        price: product.price,
+        cost_price: product.costPrice || 0,
+        thumbnails: product.thumbnails || []
+        // category eliminado
+      })
       .eq('id', product.id);
 
     if (error) {
-      console.error('Error updating accesorio:', error);
+      console.error('Error updating accessory:', error);
       return;
     }
-
     await fetchAccessories(); // importante para refrescar estado
   };
 
+  const addAccessoryItem = async (product: Product) => {
+    const payload = {
+      name: product.name,
+      price: product.price,
+      cost_price: product.costPrice || 0, // Nuevo campo
+      thumbnails: product.thumbnails || [], // Array de strings
+      is_active: true
+      // category eliminado
+    };
+
+    const { error } = await supabase.from('accesorios').insert([payload]);
+
+    if (error) {
+      console.error('Error creating accessory:', error);
+      alert('Error al crear accesorio: ' + error.message);
+      return;
+    }
+
+    await fetchAccessories();
+  };// importante para refrescar estado
 
 
   const deleteCaseItem = async (id: string) => {
@@ -633,42 +651,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 
 
-  const addAccessoryItem = async (product: Product) => {
-    const payload = {
-      name: product.name,
-      price: product.price,
-      thumbnails: product.thumbnails || [],
-      category: product.description || 'General',
-      brand: 'Genérica',
-      is_active: true
-    };
 
-    const { data, error } = await supabase
-      .from('accesorios')
-      .insert([payload])
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error adding accessory:', error);
-    } else if (data) {
-      setAccessories(prev => [
-        {
-          id: data.id,
-          name: data.name,
-          price: data.price,
-          storage: 'N/A',
-          color: 'N/A',
-          condition: 'New',
-          batteryHealth: 'N/A',
-          imageUrl: (data.thumbnails && data.thumbnails[0]) || '',
-          thumbnails: data.thumbnails || [],
-          specs: []
-        },
-        ...prev
-      ]);
-    }
-  };
 
 
   const updateInventoryItem = async (product: Product) => {
