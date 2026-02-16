@@ -100,6 +100,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const payload = {
       name: product.name,
       price: product.price,
+      cost_price: product.costPrice || 0,
       color: product.color,
       thumbnails: product.thumbnails || [],
       compatible_models: product.storage ? [product.storage] : [],
@@ -617,6 +618,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const payload = {
       name: product.name,
       price: product.price,
+      cost_price: product.costPrice || 0,
       color: product.color,
       thumbnails: product.thumbnails || [],
       is_active: true

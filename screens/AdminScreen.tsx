@@ -962,6 +962,18 @@ const AdminScreen: React.FC = () => {
                       ))}
                     </select>
                   </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Costo ($)</label>
+                    <input
+                      required
+                      type="number"
+                      value={form.costPrice || ''}
+                      onChange={e => setForm({ ...form, costPrice: Number(e.target.value) })}
+                      className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
+                      placeholder="0.00"
+                    />
+                  </div>
                 </>
               )}
 
