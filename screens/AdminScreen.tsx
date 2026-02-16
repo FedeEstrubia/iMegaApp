@@ -112,6 +112,7 @@ const AdminScreen: React.FC = () => {
   const [imageUrlInput, setImageUrlInput] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [liqInput, setLiqInput] = useState(businessLiquidity.toString());
+  const [uploading, setUploading] = useState(false);
 
   // Form State
   const [baseCost, setBaseCost] = useState<number>(0);
@@ -219,6 +220,46 @@ const AdminScreen: React.FC = () => {
       setForm({ ...form, thumbnails: [...(form.thumbnails || []), imageUrlInput] });
     }
     setImageUrlInput('');
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!event.target.files || event.target.files.length === 0) {
+        return;
+      }
+
+      setUploading(true);
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      if (data) {
+        const publicUrl = data.publicUrl;
+        setForm(prev => ({
+          ...prev,
+          imageUrl: prev.imageUrl ? prev.imageUrl : publicUrl,
+          thumbnails: [...(prev.thumbnails || []), publicUrl]
+        }));
+      }
+
+    } catch (error: any) {
+      alert('Error subiendo imagen: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -670,11 +711,52 @@ const AdminScreen: React.FC = () => {
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5 no-scrollbar pb-10">
               {/* Fotos */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">URL de Imagen</label>
-                <div className="flex gap-2">
-                  <input type="text" value={imageUrlInput} onChange={e => setImageUrlInput(e.target.value)} placeholder="https://..." className="flex-1 bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm" />
-                  <button type="button" onClick={handleAddImageUrl} className="bg-primary text-white w-12 rounded-xl flex items-center justify-center"><span className="material-symbols-outlined">add</span></button>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Imágenes del Producto</label>
+
+                <div className="flex gap-2 items-center">
+                  <label className={`flex-1 flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                    />
+                    <div className="bg-primary/10 text-primary p-3 rounded-full mb-2">
+                      <span className="material-symbols-outlined">add_a_photo</span>
+                    </div>
+                    <span className="text-xs font-bold text-slate-500">
+                      {uploading ? 'Subiendo...' : 'Subir Imagen'}
+                    </span>
+                  </label>
                 </div>
+
+                {/* Preview de Thumbnails */}
+                {form.thumbnails && form.thumbnails.length > 0 && (
+                  <div className="flex overflow-x-auto gap-2 py-2 no-scrollbar">
+                    <div className="flex gap-2">
+                      {form.thumbnails.map((thumb, index) => (
+                        <div key={index} className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                          <img src={thumb} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newThumbs = form.thumbnails?.filter((_, i) => i !== index);
+                              setForm(prev => ({
+                                ...prev,
+                                thumbnails: newThumbs,
+                                imageUrl: (prev.imageUrl === thumb && newThumbs && newThumbs.length > 0) ? newThumbs[0] : (newThumbs?.length === 0 ? '' : prev.imageUrl)
+                              }));
+                            }}
+                            className="absolute top-0 right-0 bg-black/50 text-white p-0.5 rounded-bl-lg hover:bg-red-500 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[10px]">close</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Datos Básicos */}
