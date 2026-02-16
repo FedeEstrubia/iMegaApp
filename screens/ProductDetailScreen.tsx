@@ -60,8 +60,11 @@ const ProductDetailScreen: React.FC = () => {
   const currentImage = selectedImage || product.imageUrl;
 
   const safeSpecs = (product.specs || []).filter(
-    spec => !spec.label?.startsWith('addition_')
+    spec =>
+      !spec.label?.startsWith('addition_') &&
+      spec.label !== 'Estado'
   );
+
 
 
   return (
