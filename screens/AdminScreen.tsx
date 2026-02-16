@@ -292,13 +292,25 @@ const AdminScreen: React.FC = () => {
       if (additions.workFeli) finalSpecs.push({ label: 'addition_workFeli', value: 'true', icon: 'engineering' });
     }
 
+    let finalCostPrice = 0;
+
+    if (activeCategory === 'phones') {
+      finalCostPrice = totalCalculatedCost;
+    } else {
+      if (form.costPrice === undefined || form.costPrice === null) {
+        alert('Error: el costo no está definido');
+        return;
+      }
+      finalCostPrice = Number(form.costPrice);
+    }
+
     const productData: Product = {
       ...form as Product,
-
-      costPrice: activeCategory === 'phones' ? totalCalculatedCost : Number(form.costPrice || 0),
+      costPrice: finalCostPrice,
       thumbnails: form.thumbnails || [],
       specs: finalSpecs
     };
+
 
     console.log('Submitting Product:', {
       editingId,
@@ -968,11 +980,17 @@ const AdminScreen: React.FC = () => {
                     <input
                       required
                       type="number"
-                      value={form.costPrice || ''}
-                      onChange={e => setForm({ ...form, costPrice: Number(e.target.value) })}
+                      value={form.costPrice ?? ''}
+                      onChange={e =>
+                        setForm(prev => ({
+                          ...prev,
+                          costPrice: Number(e.target.value)
+                        }))
+                      }
                       className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
                       placeholder="0.00"
                     />
+
                   </div>
                 </>
               )}
@@ -999,11 +1017,17 @@ const AdminScreen: React.FC = () => {
                     <input
                       required
                       type="number"
-                      value={form.costPrice || ''}
-                      onChange={e => setForm({ ...form, costPrice: Number(e.target.value) })}
+                      value={form.costPrice ?? ''}
+                      onChange={e =>
+                        setForm(prev => ({
+                          ...prev,
+                          costPrice: Number(e.target.value)
+                        }))
+                      }
                       className="w-full bg-white dark:bg-slate-800 border-0 rounded-xl p-3 text-sm"
                       placeholder="0.00"
                     />
+
                   </div>
                 </>
               )}
