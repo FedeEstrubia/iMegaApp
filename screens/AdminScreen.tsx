@@ -861,7 +861,7 @@ const AdminScreen: React.FC = () => {
                       required
                       type="number"
                       value={baseCost}
-                      onChange={e => setBaseCost(parseInt(e.target.value) || 0)}
+                      onChange={e => setBaseCost(Number(e.target.value) || 0)}
                       className="w-full bg-slate-50 dark:bg-slate-800 border-0 rounded-xl p-3 text-lg font-black text-orange-600"
                     />
                   </div>
